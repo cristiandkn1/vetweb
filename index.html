@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VetWeb - Cuidado Veterinario Premium</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            900: '#0c4a6e',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+<body class="font-sans antialiased text-gray-800 bg-gray-50">
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 bg-white/90 backdrop-blur-md shadow-sm transition-all duration-300" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-20 items-center">
+                <div class="flex items-center gap-2">
+                    <svg class="w-8 h-8 text-brand-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path>
+                    </svg>
+                    <span class="text-2xl font-bold bg-bg-clip-text text-brand-900 tracking-tight">VetWeb</span>
+                </div>
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#services" class="text-gray-600 hover:text-brand-600 font-medium transition-colors">Servicios</a>
+                    <a href="#about" class="text-gray-600 hover:text-brand-600 font-medium transition-colors">Nosotros</a>
+                    <a href="#contact" class="text-gray-600 hover:text-brand-600 font-medium transition-colors">Contacto</a>
+                </div>
+                <div class="hidden md:block">
+                     <!-- This could be a separate login button or part of the hero -->
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
+        <!-- Background Image -->
+        <div class="absolute inset-0 z-0">
+            <img src="assets/img/hero-bg.png" alt="Veterinary Clinic Background" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-r from-brand-900/80 to-brand-600/40 mix-blend-multiply"></div>
+        </div>
+
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full grid md:grid-cols-2 gap-12 items-center">
+            
+            <!-- Hero Content -->
+            <div class="text-center md:text-left text-white space-y-6 animate-fade-in-up">
+                <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight leading-tight">
+                    Cuidado Experto <br>
+                    <span class="text-brand-100">Para Tu Mascota</span>
+                </h1>
+                <p class="text-xl md:text-2xl text-brand-50 max-w-xl mx-auto md:mx-0 font-light">
+                    Soluciones veterinarias modernas con la mejor tecnología y atención personalizada.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center md:justify-start pt-4">
+                    <a href="#services" class="px-8 py-3 bg-white text-brand-600 rounded-lg font-semibold hover:bg-brand-50 transition-all shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                        Ver Servicios
+                    </a>
+                    <a href="#contact" class="px-8 py-3 border border-white/30 text-white rounded-lg font-semibold hover:bg-white/10 transition-all backdrop-blur-sm">
+                        Agendar Cita
+                    </a>
+                </div>
+            </div>
+
+            <!-- Login Card -->
+            <div class="w-full max-w-md mx-auto md:ml-auto glass-panel p-8 rounded-2xl shadow-2xl transform transition-all hover:scale-[1.01]">
+                <div class="text-center mb-8">
+                    <h2 class="text-2xl font-bold text-gray-800">Iniciar Sesión</h2>
+                    <p class="text-gray-500 mt-2">Accede a tu portal de VetWeb</p>
+                </div>
+
+                <form class="space-y-6" action="login/auth.php" method="POST"> <!-- Placeholder action -->
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Correo Electrónico</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                                </svg>
+                            </div>
+                            <input type="email" id="email" name="email" class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 sm:text-sm transition-shadow" placeholder="ejemplo@correo.com" required>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                            </div>
+                            <input type="password" id="password" name="password" class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 sm:text-sm transition-shadow" placeholder="••••••••" required>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <input id="remember_me" name="remember_me" type="checkbox" class="h-4 w-4 text-brand-600 focus:ring-brand-500 border-gray-300 rounded">
+                            <label for="remember_me" class="ml-2 block text-sm text-gray-600">
+                                Recordarme
+                            </label>
+                        </div>
+                        <div class="text-sm">
+                            <a href="#" class="font-medium text-brand-600 hover:text-brand-500 hover:underline">
+                                ¿Olvidaste tu contraseña?
+                            </a>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-brand-600 hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-colors transform hover:-translate-y-0.5">
+                        Ingresar
+                    </button>
+
+                    <div class="relative my-4">
+                        <div class="absolute inset-0 flex items-center">
+                            <div class="w-full border-t border-gray-300"></div>
+                        </div>
+                        <div class="relative flex justify-center text-sm">
+                            <span class="px-2 bg-white text-gray-500">¿No tienes cuenta?</span>
+                        </div>
+                    </div>
+
+                    <a href="/register/registro.php" class="w-full flex justify-center py-3 px-4 border border-brand-600 rounded-lg shadow-sm text-sm font-medium text-brand-600 bg-white hover:bg-brand-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-colors transform hover:-translate-y-0.5">
+                        Registrarse
+                    </a>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Section -->
+    <section id="services" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-3xl font-extrabold text-gray-900 sm:text-4xl">Nuestros Servicios</h2>
+                <p class="mt-4 max-w-2xl mx-auto text-xl text-gray-500">Todo lo que tu mascota necesita para una vida larga y saludable.</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Feature 1 -->
+                <div class="p-6 bg-gray-50 rounded-xl hover:shadow-lg transition-shadow">
+                    <div class="w-12 h-12 bg-brand-100 rounded-lg flex items-center justify-center mb-4 text-brand-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Medicina General</h3>
+                    <p class="text-gray-600">Chequeos completos, vacunación y prevención para mantener a tu mascota sana.</p>
+                </div>
+                <!-- Feature 2 -->
+                <div class="p-6 bg-gray-50 rounded-xl hover:shadow-lg transition-shadow">
+                    <div class="w-12 h-12 bg-brand-100 rounded-lg flex items-center justify-center mb-4 text-brand-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Cirugía Especializada</h3>
+                    <p class="text-gray-600">Quirofanos equipados y especialistas certificados para procedimientos seguros.</p>
+                </div>
+                <!-- Feature 3 -->
+                <div class="p-6 bg-gray-50 rounded-xl hover:shadow-lg transition-shadow">
+                    <div class="w-12 h-12 bg-brand-100 rounded-lg flex items-center justify-center mb-4 text-brand-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Urgencias 24/7</h3>
+                    <p class="text-gray-600">Estamos disponibles para ti y tu mascota en cualquier momento del día.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div class="col-span-1 md:col-span-2">
+                    <span class="text-2xl font-bold tracking-tight mb-4 block">VetWeb</span>
+                    <p class="text-gray-400 max-w-sm">Dedicados al bienestar de tus mascotas. Tecnología y amor en cada consulta.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Enlaces Rápidos</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-brand-500 transition-colors">Inicio</a></li>
+                        <li><a href="#services" class="hover:text-brand-500 transition-colors">Servicios</a></li>
+                        <li><a href="#about" class="hover:text-brand-500 transition-colors">Nosotros</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold mb-4">Contacto</h4>
+                    <ul class="space-y-2 text-gray-400">
+                        <li>contacto@vetweb.com</li>
+                        <li>+56 9 1234 5678</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-12 pt-8 text-center text-gray-500 text-sm">
+                &copy; 2024 VetWeb. Todos los derechos reservados.
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
