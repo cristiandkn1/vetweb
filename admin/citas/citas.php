@@ -21,12 +21,13 @@ if (!isset($_SESSION['user_id'])) {
         <main class="flex-1 flex flex-col min-w-0 bg-gray-100 overflow-y-auto">
 
             <div class="p-6 md:p-10">
+
+                <!-- Header -->
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
                     <div>
                         <h1 class="text-3xl font-bold text-gray-800">Gestión de Citas</h1>
                         <p class="text-gray-500 mt-1">Administra la agenda y pacientes</p>
                     </div>
-
                     <button id="btn-nueva-cita"
                         class="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-4 py-2.5 rounded-lg shadow-sm transition-colors font-medium">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -36,10 +37,34 @@ if (!isset($_SESSION['user_id'])) {
                     </button>
                 </div>
 
+                <!-- Filtros de estado -->
+                <div class="flex flex-wrap gap-2 mb-6" id="filtros-estado">
+                    <button data-estado="todos"
+                        class="filtro-btn activo px-4 py-1.5 rounded-full text-sm font-medium bg-brand-600 text-white transition-colors">
+                        Todas
+                    </button>
+                    <button data-estado="pendiente"
+                        class="filtro-btn px-4 py-1.5 rounded-full text-sm font-medium bg-white text-gray-600 border border-gray-200 hover:border-brand-400 transition-colors">
+                        Pendientes
+                    </button>
+                    <button data-estado="confirmada"
+                        class="filtro-btn px-4 py-1.5 rounded-full text-sm font-medium bg-white text-gray-600 border border-gray-200 hover:border-brand-400 transition-colors">
+                        Confirmadas
+                    </button>
+                    <button data-estado="completada"
+                        class="filtro-btn px-4 py-1.5 rounded-full text-sm font-medium bg-white text-gray-600 border border-gray-200 hover:border-brand-400 transition-colors">
+                        Completadas
+                    </button>
+                    <button data-estado="cancelada"
+                        class="filtro-btn px-4 py-1.5 rounded-full text-sm font-medium bg-white text-gray-600 border border-gray-200 hover:border-brand-400 transition-colors">
+                        Canceladas
+                    </button>
+                </div>
+
+                <!-- Grid de citas -->
                 <div id="contenedor-citas" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div
-                        class="border-2 border-dashed border-gray-300 rounded-lg h-48 flex items-center justify-center text-gray-400">
-                        Aquí se cargarán las cards de citas...
+                    <div class="col-span-3 flex justify-center items-center h-32 text-gray-400">
+                        Cargando citas...
                     </div>
                 </div>
 
@@ -51,6 +76,7 @@ if (!isset($_SESSION['user_id'])) {
 
     <script src="../scripts/sidebar.js"></script>
     <script src="scripts/crear-cita.js"></script>
+    <script src="scripts/listar-citas.js"></script>
 </body>
 
 </html>

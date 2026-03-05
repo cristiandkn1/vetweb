@@ -1,14 +1,12 @@
 <?php
 require_once __DIR__ . '/../../../includes/db.php';
 
-// Fetch appointment types
 try {
-    $stmt = $pdo->query("SELECT nombre, valor_aprox FROM cita_tipos WHERE activo = 1 ORDER BY nombre ASC");
+    $stmt = $pdo->query("SELECT id, nombre, precio_min, precio_max FROM servicios WHERE activo = 1 ORDER BY nombre ASC");
     $tipos_cita = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
-    // Fallback if table doesn't exist or error
     $tipos_cita = [];
-    error_log("Error fetching cita_tipos: " . $e->getMessage());
+    error_log("Error fetching servicios: " . $e->getMessage());
 }
 ?>
 <div id="modal-nueva-cita" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog"
@@ -36,12 +34,13 @@ try {
 
                 <form id="form-crear-cita" class="p-6 space-y-6">
 
+                    <!-- 1. Cliente -->
                     <div>
                         <h4 class="text-sm font-bold text-brand-600 uppercase tracking-wide mb-3">1. Datos del Cliente
                         </h4>
                         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div class="col-span-2">
-                                <label for="cliente_busqueda" class="block text-sm font-medium text-gray-700">Buscar o
+                                <label for="cliente_nombre" class="block text-sm font-medium text-gray-700">Buscar o
                                     Crear Cliente</label>
                                 <input type="text" name="cliente_nombre" id="cliente_nombre"
                                     placeholder="Nombre del cliente..."
@@ -49,16 +48,15 @@ try {
                                 <p class="text-xs text-gray-500 mt-1">Escribe para buscar. Si no existe, llena los
                                     campos abajo.</p>
                             </div>
-
                             <div>
                                 <label for="cliente_telefono"
-                                    class="block text-sm font-medium text-gray-700">Teléfono</label>
+                                    class="block text-sm font-medium text-gray-700">Celular</label>
                                 <input type="tel" name="cliente_telefono" id="cliente_telefono"
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 sm:text-sm border p-2">
                             </div>
                             <div>
-                                <label for="cliente_email" class="block text-sm font-medium text-gray-700">Email
-                                    (Opcional)</label>
+                                <label for="cliente_email" class="block text-sm font-medium text-gray-700">Email <span
+                                        class="text-gray-400 font-normal">(Opcional)</span></label>
                                 <input type="email" name="cliente_email" id="cliente_email"
                                     class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 sm:text-sm border p-2">
                             </div>
@@ -67,6 +65,7 @@ try {
 
                     <hr class="border-gray-100">
 
+                    <!-- 2. Mascota -->
                     <div>
                         <div class="flex justify-between items-center mb-3">
                             <h4 class="text-sm font-bold text-brand-600 uppercase tracking-wide">2. Mascota</h4>
@@ -94,6 +93,7 @@ try {
 
                     <hr class="border-gray-100">
 
+                    <!-- 3. Detalles de la cita -->
                     <div>
                         <h4 class="text-sm font-bold text-brand-600 uppercase tracking-wide mb-3">3. Detalles de la Cita
                         </h4>
@@ -112,14 +112,25 @@ try {
                                     <option value="">-- Seleccione un servicio --</option>
                                     <?php if (!empty($tipos_cita)): ?>
                                         <?php foreach ($tipos_cita as $tipo): ?>
+                                            <?php
+                                            $precio_min = (float) $tipo['precio_min'];
+                                            $precio_max = (float) $tipo['precio_max'];
+                                            if ($precio_min > 0 && $precio_max > $precio_min) {
+                                                $precio_texto = '$' . number_format($precio_min, 0, ',', '.') . ' – $' . number_format($precio_max, 0, ',', '.');
+                                            } elseif ($precio_min > 0) {
+                                                $precio_texto = '$' . number_format($precio_min, 0, ',', '.');
+                                            } else {
+                                                $precio_texto = 'A consultar';
+                                            }
+                                            ?>
                                             <option value="<?php echo htmlspecialchars($tipo['nombre']); ?>"
-                                                data-precio="<?php echo htmlspecialchars($tipo['valor_aprox']); ?>">
-                                                <?php echo htmlspecialchars($tipo['nombre']); ?>
-                                                (≈$<?php echo htmlspecialchars($tipo['valor_aprox']); ?>)
+                                                data-precio-min="<?php echo $precio_min; ?>"
+                                                data-precio-max="<?php echo $precio_max; ?>">
+                                                <?php echo htmlspecialchars($tipo['nombre']); ?> (≈<?php echo $precio_texto; ?>)
                                             </option>
                                         <?php endforeach; ?>
                                     <?php else: ?>
-                                        <option value="">No hay tipos de citas disponibles</option>
+                                        <option value="" disabled>No hay servicios disponibles</option>
                                     <?php endif; ?>
                                 </select>
                             </div>
