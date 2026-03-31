@@ -2,8 +2,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // ── Referencias DOM ────────────────────────────────────────────────────────
-    const btnAbrir          = document.getElementById('btn-nueva-cita');
+    // btn-nueva-cita lo maneja el modal selector en citas.php
     const modal             = document.getElementById('modal-nueva-cita');
     const btnCerrarX        = document.getElementById('btn-cerrar-modal');
     const btnCancelar       = document.getElementById('btn-cancelar-modal');
@@ -16,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const clienteNombreInput= document.getElementById('cliente_nombre');
     const mascotaSelect     = document.getElementById('mascota_id');
 
-    // ── Modal ──────────────────────────────────────────────────────────────────
+    // ── Modal principal ────────────────────────────────────────────────────────
     function toggleModal(show) {
         if (show) {
             modal.classList.remove('hidden');
@@ -28,25 +27,21 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function resetForm() {
         form.reset();
-        // Volver a estado inicial de mascota
         formNuevaMascota.classList.add('hidden');
         containerSelect.classList.remove('hidden');
         mascotaSelect.innerHTML = '<option value="">-- Seleccione Cliente Primero --</option>';
         clearError();
     }
 
-    if (btnAbrir)    btnAbrir.addEventListener('click', () => toggleModal(true));
+
     if (btnCerrarX)  btnCerrarX.addEventListener('click', () => toggleModal(false));
     if (btnCancelar) btnCancelar.addEventListener('click', () => toggleModal(false));
 
-    // Cerrar al hacer click en el overlay
     modal.addEventListener('click', (e) => {
-        if (e.target === modal.querySelector('.fixed.inset-0.bg-gray-900\\/50')) {
-            toggleModal(false);
-        }
+        if (e.target === modal.querySelector('.fixed.inset-0.bg-gray-900\\/50')) toggleModal(false);
     });
 
-    // ── Mascota: toggle entre select y form nueva mascota ──────────────────────
+    // ── Mascota ────────────────────────────────────────────────────────────────
     btnNuevaMascota.addEventListener('click', () => {
         containerSelect.classList.add('hidden');
         formNuevaMascota.classList.remove('hidden');
@@ -59,28 +54,22 @@ document.addEventListener('DOMContentLoaded', () => {
         formNuevaMascota.querySelectorAll('input, select, textarea').forEach(el => el.value = '');
     });
 
-    // ── Autocompletar mascotas al escribir nombre de cliente ───────────────────
+    // ── Autocompletar cliente ──────────────────────────────────────────────────
     let busquedaTimer;
     clienteNombreInput.addEventListener('input', () => {
         clearTimeout(busquedaTimer);
         const q = clienteNombreInput.value.trim();
-
         if (q.length < 2) {
             mascotaSelect.innerHTML = '<option value="">-- Seleccione Cliente Primero --</option>';
             return;
         }
-
         busquedaTimer = setTimeout(async () => {
             try {
                 const res  = await fetch(`/vetweb/admin/citas/api/buscar_cliente.php?q=${encodeURIComponent(q)}`);
                 const data = await res.json();
-
                 if (data.success && data.cliente) {
-                    // Rellenar teléfono y email si vienen del servidor
                     if (data.cliente.telefono) document.getElementById('cliente_telefono').value = data.cliente.telefono;
                     if (data.cliente.email)    document.getElementById('cliente_email').value    = data.cliente.email;
-
-                    // Poblar select de mascotas
                     if (data.mascotas && data.mascotas.length > 0) {
                         mascotaSelect.innerHTML = '<option value="">-- Seleccione una mascota --</option>';
                         data.mascotas.forEach(m => {
@@ -95,13 +84,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     mascotaSelect.innerHTML = '<option value="">-- Cliente nuevo --</option>';
                 }
-            } catch {
-                // Silencioso; el usuario igual puede llenar manual
-            }
+            } catch { /* silencioso */ }
         }, 350);
     });
 
-    // ── Feedback de errores ────────────────────────────────────────────────────
+    // ── Errores ────────────────────────────────────────────────────────────────
     function showError(msg) {
         clearError();
         const div = document.createElement('div');
@@ -110,13 +97,9 @@ document.addEventListener('DOMContentLoaded', () => {
         div.textContent = msg;
         form.prepend(div);
     }
-
-    function clearError() {
-        document.getElementById('cita-error')?.remove();
-    }
-
+    function clearError() { document.getElementById('cita-error')?.remove(); }
     function setLoading(loading) {
-        btnSubmit.disabled = loading;
+        btnSubmit.disabled    = loading;
         btnSubmit.textContent = loading ? 'Guardando...' : 'Guardar Cita';
     }
 
@@ -126,31 +109,21 @@ document.addEventListener('DOMContentLoaded', () => {
         clearError();
 
         const formData = new FormData(form);
-
-        // Indicar si se está registrando una mascota nueva
-        const esNuevaMascota = !formNuevaMascota.classList.contains('hidden');
-        if (esNuevaMascota) {
+        if (!formNuevaMascota.classList.contains('hidden')) {
             formData.set('nueva_mascota', '1');
         }
 
         setLoading(true);
-
         try {
-            const res  = await fetch('/vetweb/admin/citas/api/crear_cita.php', {
-                method: 'POST',
-                body: formData,
-            });
-
+            const res  = await fetch('/vetweb/admin/citas/api/crear_cita.php', { method: 'POST', body: formData });
             const data = await res.json();
 
             if (data.success) {
                 toggleModal(false);
-                // Recargar la página o actualizar la vista de citas sin recargar
-                window.location.reload();
+                mostrarModalLink(data.link_seguimiento);
             } else {
                 showError(data.message || 'Ocurrió un error al guardar la cita.');
             }
-
         } catch (err) {
             showError('Error de conexión. Intenta de nuevo.');
             console.error(err);
@@ -158,5 +131,62 @@ document.addEventListener('DOMContentLoaded', () => {
             setLoading(false);
         }
     });
+
+    // ── Modal de link de seguimiento ───────────────────────────────────────────
+    function mostrarModalLink(link) {
+        // Crear modal si no existe
+        let ml = document.getElementById('modal-link-seguimiento');
+        if (!ml) {
+            ml = document.createElement('div');
+            ml.id = 'modal-link-seguimiento';
+            ml.className = 'fixed inset-0 z-50 flex items-center justify-center p-4';
+            ml.innerHTML = `
+                <div class="fixed inset-0 bg-gray-900/60"></div>
+                <div class="relative bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center z-10">
+                    <div class="text-5xl mb-3">🎉</div>
+                    <h3 class="text-xl font-bold text-gray-800 mb-1">¡Cita agendada!</h3>
+                    <p class="text-gray-500 text-sm mb-5">
+                        Comparte este enlace con el cliente para que pueda seguir el estado de su cita.
+                    </p>
+
+                    <div class="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl p-3 mb-4">
+                        <input id="input-link-seguimiento" type="text" readonly
+                            class="flex-1 text-xs text-gray-700 bg-transparent outline-none truncate">
+                        <button id="btn-copiar-link"
+                            class="shrink-0 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition">
+                            Copiar
+                        </button>
+                    </div>
+
+                    <a id="btn-abrir-link" href="#" target="_blank"
+                        class="block text-xs text-brand-600 hover:underline mb-6">
+                        Abrir enlace ↗
+                    </a>
+
+                    <button id="btn-cerrar-link"
+                        class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2.5 rounded-xl transition text-sm">
+                        Cerrar y recargar
+                    </button>
+                </div>`;
+            document.body.appendChild(ml);
+
+            document.getElementById('btn-copiar-link').addEventListener('click', () => {
+                const inp = document.getElementById('input-link-seguimiento');
+                navigator.clipboard.writeText(inp.value).then(() => {
+                    document.getElementById('btn-copiar-link').textContent = '¡Copiado!';
+                    setTimeout(() => document.getElementById('btn-copiar-link').textContent = 'Copiar', 2000);
+                });
+            });
+
+            document.getElementById('btn-cerrar-link').addEventListener('click', () => {
+                ml.remove();
+                window.location.reload();
+            });
+        }
+
+        document.getElementById('input-link-seguimiento').value = link;
+        document.getElementById('btn-abrir-link').href = link;
+        ml.classList.remove('hidden');
+    }
 
 });
