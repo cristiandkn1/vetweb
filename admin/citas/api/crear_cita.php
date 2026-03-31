@@ -9,7 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit;
 }
 
-$cliente_nombre = trim($_POST['cliente_nombre'] ?? '');
+$cliente_id = intval($_POST['cliente_id'] ?? 0);
 $cliente_telefono = trim($_POST['cliente_telefono'] ?? '');
 $cliente_email = trim($_POST['cliente_email'] ?? '');
 $mascota_id = intval($_POST['mascota_id'] ?? 0);
@@ -17,27 +17,15 @@ $cita_fecha = trim($_POST['cita_fecha'] ?? '');
 $cita_tipo = trim($_POST['cita_tipo'] ?? '');
 $cita_nota = trim($_POST['cita_nota'] ?? '');
 
-$nueva_mascota = !empty($_POST['nueva_mascota']);
-$mascota_nombre = trim($_POST['mascota_nombre'] ?? '');
-$mascota_especie = trim($_POST['mascota_especie'] ?? '');
-$mascota_raza = trim($_POST['mascota_raza'] ?? '');
-$mascota_sexo = trim($_POST['mascota_sexo'] ?? '');
-$mascota_fecha_nac = trim($_POST['mascota_fecha_nac'] ?? '');
-$mascota_observaciones = trim($_POST['mascota_observaciones'] ?? '');
-
 $errores = [];
-if ($cliente_nombre === '')
-    $errores[] = 'El nombre del cliente es obligatorio.';
-if ($cliente_telefono === '')
-    $errores[] = 'El celular del cliente es obligatorio.';
+if ($cliente_id === 0)
+    $errores[] = 'Debe seleccionar un cliente.';
+if ($mascota_id === 0)
+    $errores[] = 'Debe seleccionar una mascota.';
 if ($cita_fecha === '')
     $errores[] = 'La fecha y hora son obligatorias.';
 if ($cita_tipo === '')
     $errores[] = 'Debe seleccionar un tipo de servicio.';
-if (!$nueva_mascota && $mascota_id === 0)
-    $errores[] = 'Debe seleccionar o registrar una mascota.';
-if ($nueva_mascota && $mascota_nombre === '')
-    $errores[] = 'El nombre de la nueva mascota es obligatorio.';
 
 if (!empty($errores)) {
     http_response_code(422);
@@ -48,37 +36,21 @@ if (!empty($errores)) {
 try {
     $pdo->beginTransaction();
 
-    // 1. Cliente
-    $stmt = $pdo->prepare("SELECT id FROM cliente WHERE telefono = ? LIMIT 1");
-    $stmt->execute([$cliente_telefono]);
-    $cliente = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if ($cliente) {
-        $cliente_id = (int) $cliente['id'];
-        $pdo->prepare("UPDATE cliente SET nombre_completo = ?, email = ? WHERE id = ?")
-            ->execute([$cliente_nombre, $cliente_email ?: null, $cliente_id]);
-    } else {
-        $ins = $pdo->prepare("INSERT INTO cliente (nombre_completo, telefono, email, fecha_registro) VALUES (?, ?, ?, NOW())");
-        $ins->execute([$cliente_nombre, $cliente_telefono, $cliente_email ?: null]);
-        $cliente_id = (int) $pdo->lastInsertId();
+    // 1. Cliente: Validar y actualizar sus datos
+    $stmt = $pdo->prepare("SELECT id FROM cliente WHERE id = ? LIMIT 1");
+    $stmt->execute([$cliente_id]);
+    if (!$stmt->fetch()) {
+        throw new Exception("Cliente no encontrado en el sistema.");
     }
+    
+    $pdo->prepare("UPDATE cliente SET telefono = ?, email = ? WHERE id = ?")
+        ->execute([$cliente_telefono, $cliente_email ?: null, $cliente_id]);
 
-    // 2. Mascota nueva si aplica
-    if ($nueva_mascota) {
-        $ins = $pdo->prepare(
-            "INSERT INTO mascota (cliente_id, nombre, especie, raza, sexo, fecha_nacimiento, observaciones, fecha_registro, fecha_actualizacion)
-             VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())"
-        );
-        $ins->execute([
-            $cliente_id,
-            $mascota_nombre,
-            $mascota_especie ?: null,
-            $mascota_raza ?: null,
-            $mascota_sexo ?: null,
-            $mascota_fecha_nac ?: null,
-            $mascota_observaciones ?: null
-        ]);
-        $mascota_id = (int) $pdo->lastInsertId();
+    // 2. Mascota: Validar
+    $stmt = $pdo->prepare("SELECT id FROM mascota WHERE id = ? AND cliente_id = ?");
+    $stmt->execute([$mascota_id, $cliente_id]);
+    if (!$stmt->fetch()) {
+        throw new Exception("Mascota no pertenece a este cliente.");
     }
 
     // 3. Generar token único

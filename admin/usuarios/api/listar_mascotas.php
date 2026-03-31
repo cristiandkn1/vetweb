@@ -14,7 +14,7 @@ if ($cliente_id === 0) {
 
 try {
     $stmt = $pdo->prepare(
-        "SELECT id, nombre, especie, raza, fecha_nacimiento, sexo, color, observaciones, foto_url
+        "SELECT id, cliente_id, nombre, especie, raza, fecha_nacimiento, sexo, color, peso, ultima_revision, notas_internas, numero_chip, esterilizado, alergias, observaciones, fecha_registro, fecha_actualizacion
          FROM mascota
          WHERE cliente_id = ?
          ORDER BY nombre ASC"

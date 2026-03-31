@@ -12,8 +12,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const formNuevaMascota  = document.getElementById('form-nueva-mascota');
     const form              = document.getElementById('form-crear-cita');
     const btnSubmit         = form.querySelector('[type="submit"]');
-    const clienteNombreInput= document.getElementById('cliente_nombre');
+    const clienteIdSelect   = document.getElementById('cliente_id');
     const mascotaSelect     = document.getElementById('mascota_id');
+    
+    // Inicializar Select2
+    if (window.jQuery && window.jQuery.fn.select2) {
+        window.jQuery(clienteIdSelect).select2({ 
+            width: '100%', 
+            dropdownParent: window.jQuery('#modal-nueva-cita')
+        });
+        window.jQuery(mascotaSelect).select2({ 
+            width: '100%', 
+            dropdownParent: window.jQuery('#modal-nueva-cita')
+        });
+    }
 
     // ── Modal principal ────────────────────────────────────────────────────────
     function toggleModal(show) {
@@ -27,9 +39,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function resetForm() {
         form.reset();
-        formNuevaMascota.classList.add('hidden');
-        containerSelect.classList.remove('hidden');
-        mascotaSelect.innerHTML = '<option value="">-- Seleccione Cliente Primero --</option>';
+        if (window.jQuery && window.jQuery.fn.select2) {
+            window.jQuery(clienteIdSelect).val('').trigger('change.select2');
+            window.jQuery(mascotaSelect).empty().append('<option value="">-- Seleccione Cliente Primero --</option>').trigger('change.select2');
+        }
         clearError();
     }
 
@@ -41,52 +54,43 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.target === modal.querySelector('.fixed.inset-0.bg-gray-900\\/50')) toggleModal(false);
     });
 
-    // ── Mascota ────────────────────────────────────────────────────────────────
-    btnNuevaMascota.addEventListener('click', () => {
-        containerSelect.classList.add('hidden');
-        formNuevaMascota.classList.remove('hidden');
-        mascotaSelect.value = '';
-    });
+    // ── Al cambiar de Cliente ──────────────────────────────────────────────────
+    if (window.jQuery) {
+        window.jQuery(clienteIdSelect).on('change', async function() {
+            const selectedOption = window.jQuery(this).find(':selected');
+            const tel = selectedOption.data('tel') || '';
+            const email = selectedOption.data('email') || '';
+            const c_id = window.jQuery(this).val();
 
-    btnCancelarMascota.addEventListener('click', () => {
-        formNuevaMascota.classList.add('hidden');
-        containerSelect.classList.remove('hidden');
-        formNuevaMascota.querySelectorAll('input, select, textarea').forEach(el => el.value = '');
-    });
+            document.getElementById('cliente_telefono').value = tel;
+            document.getElementById('cliente_email').value    = email;
 
-    // ── Autocompletar cliente ──────────────────────────────────────────────────
-    let busquedaTimer;
-    clienteNombreInput.addEventListener('input', () => {
-        clearTimeout(busquedaTimer);
-        const q = clienteNombreInput.value.trim();
-        if (q.length < 2) {
-            mascotaSelect.innerHTML = '<option value="">-- Seleccione Cliente Primero --</option>';
-            return;
-        }
-        busquedaTimer = setTimeout(async () => {
+            const ms = window.jQuery(mascotaSelect);
+            ms.empty();
+
+            if (!c_id) {
+                ms.append('<option value="">-- Seleccione Cliente Primero --</option>').trigger('change');
+                return;
+            }
+
             try {
-                const res  = await fetch(`/vetweb/admin/citas/api/buscar_cliente.php?q=${encodeURIComponent(q)}`);
+                const res  = await fetch(`/vetweb/admin/citas/api/buscar_cliente.php?q=C_${c_id}`);
                 const data = await res.json();
-                if (data.success && data.cliente) {
-                    if (data.cliente.telefono) document.getElementById('cliente_telefono').value = data.cliente.telefono;
-                    if (data.cliente.email)    document.getElementById('cliente_email').value    = data.cliente.email;
-                    if (data.mascotas && data.mascotas.length > 0) {
-                        mascotaSelect.innerHTML = '<option value="">-- Seleccione una mascota --</option>';
-                        data.mascotas.forEach(m => {
-                            const opt = document.createElement('option');
-                            opt.value       = m.id;
-                            opt.textContent = `${m.nombre} (${m.especie || 'Sin especie'})`;
-                            mascotaSelect.appendChild(opt);
-                        });
-                    } else {
-                        mascotaSelect.innerHTML = '<option value="">-- Sin mascotas registradas --</option>';
-                    }
+                
+                if (data.success && data.mascota && data.mascota.length > 0) {
+                    ms.append('<option value="">-- Seleccione una mascota --</option>');
+                    data.mascota.forEach(m => {
+                        ms.append(new Option(`${m.nombre} (${m.especie || 'Sin especie'})`, m.id));
+                    });
                 } else {
-                    mascotaSelect.innerHTML = '<option value="">-- Cliente nuevo --</option>';
+                    ms.append('<option value="">-- Sin mascotas registradas --</option>');
                 }
-            } catch { /* silencioso */ }
-        }, 350);
-    });
+            } catch { 
+                ms.append('<option value="">-- Error de conexión --</option>');
+            }
+            ms.trigger('change');
+        });
+    }
 
     // ── Errores ────────────────────────────────────────────────────────────────
     function showError(msg) {
@@ -109,9 +113,6 @@ document.addEventListener('DOMContentLoaded', () => {
         clearError();
 
         const formData = new FormData(form);
-        if (!formNuevaMascota.classList.contains('hidden')) {
-            formData.set('nueva_mascota', '1');
-        }
 
         setLoading(true);
         try {

@@ -4,9 +4,13 @@ require_once __DIR__ . '/../../../includes/db.php';
 try {
     $stmt = $pdo->query("SELECT id, nombre, precio_min, precio_max FROM servicios WHERE activo = 1 ORDER BY nombre ASC");
     $tipos_cita = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    $stmt_c = $pdo->query("SELECT id, nombre_completo, telefono, email FROM cliente ORDER BY nombre_completo ASC");
+    $clientes = $stmt_c->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     $tipos_cita = [];
-    error_log("Error fetching servicios: " . $e->getMessage());
+    $clientes = [];
+    error_log("Error fetching data: " . $e->getMessage());
 }
 ?>
 <div id="modal-nueva-cita" class="fixed inset-0 z-50 hidden" aria-labelledby="modal-title" role="dialog"
@@ -40,13 +44,19 @@ try {
                         </h4>
                         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div class="col-span-2">
-                                <label for="cliente_nombre" class="block text-sm font-medium text-gray-700">Buscar o
-                                    Crear Cliente</label>
-                                <input type="text" name="cliente_nombre" id="cliente_nombre"
-                                    placeholder="Nombre del cliente..."
-                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 sm:text-sm border p-2">
-                                <p class="text-xs text-gray-500 mt-1">Escribe para buscar. Si no existe, llena los
-                                    campos abajo.</p>
+                                <label for="cliente_id" class="block text-sm font-medium text-gray-700">Seleccionar Cliente</label>
+                                <select name="cliente_id" id="cliente_id"
+                                    class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 sm:text-sm border p-2 select2-custom">
+                                    <option value="">-- Buscar por Nombre o RUT --</option>
+                                    <?php foreach ($clientes as $c): ?>
+                                        <option value="<?php echo $c['id']; ?>"
+                                                data-tel="<?php echo htmlspecialchars($c['telefono'] ?? ''); ?>"
+                                                data-email="<?php echo htmlspecialchars($c['email'] ?? ''); ?>">
+                                            <?php echo htmlspecialchars($c['nombre_completo']); ?> <?php echo !empty($c['telefono']) ? '('.htmlspecialchars($c['telefono']).')' : ''; ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                                <p class="text-xs text-gray-500 mt-1">Busca y selecciona un cliente registrado.</p>
                             </div>
                             <div>
                                 <label for="cliente_telefono"
@@ -69,26 +79,23 @@ try {
                     <div>
                         <div class="flex justify-between items-center mb-3">
                             <h4 class="text-sm font-bold text-brand-600 uppercase tracking-wide">2. Mascota</h4>
-                            <button type="button" id="btn-nueva-mascota"
+                            <a id="btn-nueva-mascota" href="/vetweb/admin/usuarios/usuarios.php"
                                 class="text-xs text-brand-600 hover:text-brand-800 font-medium flex items-center gap-1">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M12 4v16m8-8H4"></path>
                                 </svg>
                                 Nueva Mascota
-                            </button>
+                            </a>
                         </div>
 
                         <div id="container-select-mascota">
-                            <label for="mascota_id" class="block text-sm font-medium text-gray-700">Seleccionar
-                                Mascota</label>
+                            <label for="mascota_id" class="block text-sm font-medium text-gray-700">Seleccionar Mascota</label>
                             <select id="mascota_id" name="mascota_id"
-                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 sm:text-sm border p-2 bg-white">
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-500 focus:ring-brand-500 sm:text-sm border p-2 select2-custom">
                                 <option value="">-- Seleccione Cliente Primero --</option>
                             </select>
                         </div>
-
-                        <?php include 'form-nueva-mascota.php'; ?>
                     </div>
 
                     <hr class="border-gray-100">

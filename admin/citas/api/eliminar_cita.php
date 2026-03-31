@@ -19,10 +19,10 @@ if ($id === 0) {
 }
 
 try {
-    $stmt = $pdo->prepare("DELETE FROM citas WHERE id = ?");
+    $stmt = $pdo->prepare("UPDATE citas SET oculta = 1 WHERE id = ?");
     $stmt->execute([$id]);
 
-    echo json_encode(['success' => true, 'message' => 'Cita eliminada correctamente.']);
+    echo json_encode(['success' => true, 'message' => 'Cita ocultada y mantenida en el historial.']);
 
 } catch (PDOException $e) {
     error_log("Error eliminar_cita: " . $e->getMessage());

@@ -11,6 +11,9 @@ if (!isset($_SESSION['user_id'])) {
 <?php include '../../includes/head.php'; ?>
 
 <body class="bg-gray-100 font-sans">
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
     <?php include '../../includes/mobile-header.php'; ?>
 
@@ -28,13 +31,25 @@ if (!isset($_SESSION['user_id'])) {
                         <h1 class="text-3xl font-bold text-gray-800">Gestión de Citas</h1>
                         <p class="text-gray-500 mt-1">Administra la agenda y pacientes</p>
                     </div>
-                    <button id="btn-nueva-cita"
-                        class="flex items-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-4 py-2.5 rounded-lg shadow-sm transition-colors font-medium">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                        </svg>
-                        Nueva Cita
-                    </button>
+                    <div class="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
+                        <!-- Buscador -->
+                        <div class="relative w-full sm:w-64">
+                            <input type="text" id="buscador-clientes" placeholder="Buscar cliente o paciente..." 
+                                class="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 shadow-sm transition-shadow">
+                            <svg class="w-4 h-4 text-gray-400 absolute left-3.5 top-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </div>
+                        
+                        <!-- Botón Nueva Cita -->
+                        <button id="btn-nueva-cita"
+                            class="flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-4 py-2.5 rounded-lg shadow-sm transition-colors font-medium w-full sm:w-auto">
+                            <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                            <span class="whitespace-nowrap">Nueva Cita</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Filtros de estado -->
@@ -120,6 +135,7 @@ if (!isset($_SESSION['user_id'])) {
     </div>
 
     <?php include 'componentes/modal-crear-cita.php'; ?>
+    <?php include 'componentes/modal-finalizar-cita.php'; ?>
 
     <script src="../scripts/sidebar.js"></script>
     <script src="scripts/crear-cita.js"></script>

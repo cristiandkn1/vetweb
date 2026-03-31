@@ -12,6 +12,9 @@ try {
             citas.tipo,
             citas.nota,
             citas.estado,
+            citas.token_publico,
+            s.precio_min AS precio_estimado_min,
+            s.precio_max AS precio_estimado_max,
             cliente.id        AS cliente_id,
             cliente.nombre_completo AS cliente_nombre,
             cliente.telefono  AS cliente_telefono,
@@ -21,6 +24,8 @@ try {
          FROM citas
          JOIN cliente ON citas.cliente_id = cliente.id
          JOIN mascota ON citas.mascota_id = mascota.id
+         LEFT JOIN servicios s ON citas.tipo = s.nombre
+         WHERE citas.oculta = 0
          ORDER BY citas.fecha DESC"
     );
     $citas = $stmt->fetchAll(PDO::FETCH_ASSOC);

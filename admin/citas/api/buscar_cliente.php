@@ -11,17 +11,25 @@ if (strlen($q) < 2) {
 }
 
 try {
-    // Buscar cliente por nombre_completo o teléfono
-    $stmt = $pdo->prepare(
-        "SELECT id, nombre_completo, telefono, email
-         FROM cliente
-         WHERE nombre_completo LIKE ? OR telefono LIKE ?
-         ORDER BY nombre_completo ASC
-         LIMIT 1"
-    );
-    $like = '%' . $q . '%';
-    $stmt->execute([$like, $like]);
-    $cliente = $stmt->fetch(PDO::FETCH_ASSOC);
+    $cliente = null;
+    if (strpos($q, 'C_') === 0) {
+        $id_str = intval(substr($q, 2));
+        $stmt = $pdo->prepare("SELECT id, nombre_completo, telefono, email FROM cliente WHERE id = ?");
+        $stmt->execute([$id_str]);
+        $cliente = $stmt->fetch(PDO::FETCH_ASSOC);
+    } else {
+        // Buscar cliente por nombre_completo o teléfono
+        $stmt = $pdo->prepare(
+            "SELECT id, nombre_completo, telefono, email
+             FROM cliente
+             WHERE nombre_completo LIKE ? OR telefono LIKE ?
+             ORDER BY nombre_completo ASC
+             LIMIT 1"
+        );
+        $like = '%' . $q . '%';
+        $stmt->execute([$like, $like]);
+        $cliente = $stmt->fetch(PDO::FETCH_ASSOC);
+    }
 
     if (!$cliente) {
         echo json_encode(['success' => false, 'cliente' => null, 'mascota' => []]);

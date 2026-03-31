@@ -8,6 +8,95 @@ window.MascotaState = {
     eliminarId:    null,
 };
 
+// ── Estado vacunas ─────────────────────────────────────────────────────────────
+let _vacunas = []; // [{ id, nombre, fecha_aplicacion, fecha_proxima, veterinario, lote, notas, _delete }]
+
+function resetVacunas() {
+    _vacunas = [];
+    renderVacunas();
+}
+
+function renderVacunas() {
+    const lista  = document.getElementById('lista-vacunas');
+    const vacio  = document.getElementById('vacunas-vacio');
+    const activas = _vacunas.filter(v => !v._delete);
+
+    if (activas.length === 0) {
+        lista.innerHTML = '';
+        if (vacio) vacio.classList.remove('hidden');
+        return;
+    }
+    if (vacio) vacio.classList.add('hidden');
+    lista.innerHTML = '';
+
+    activas.forEach(v => {
+        const realIdx = _vacunas.indexOf(v);
+        const div = document.createElement('div');
+        div.className = 'bg-gray-50 border border-gray-100 rounded-xl p-3 space-y-2';
+        div.innerHTML = `
+            <div class="flex items-center justify-between gap-2">
+                <input type="hidden"  name="vacuna_id[]"    value="${v.id ?? ''}">
+                <input type="text"    name="vacuna_nombre[]" value="${escM(v.nombre)}"
+                    placeholder="Nombre de la vacuna *"
+                    class="flex-1 border border-gray-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-400">
+                <button type="button" data-vidx="${realIdx}"
+                    class="btn-quitar-vacuna text-red-400 hover:text-red-600 shrink-0">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="text-xs text-gray-500 block mb-0.5">Fecha aplicación *</label>
+                    <input type="date" name="vacuna_fecha_aplicacion[]" value="${v.fecha_aplicacion ?? ''}"
+                        class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-400">
+                </div>
+                <div>
+                    <label class="text-xs text-gray-500 block mb-0.5">Próxima dosis</label>
+                    <input type="date" name="vacuna_fecha_proxima[]" value="${v.fecha_proxima ?? ''}"
+                        class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-400">
+                </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+                <input type="text" name="vacuna_veterinario[]" value="${escM(v.veterinario ?? '')}"
+                    placeholder="Veterinario"
+                    class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-400">
+                <input type="text" name="vacuna_lote[]" value="${escM(v.lote ?? '')}"
+                    placeholder="Lote"
+                    class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-400">
+            </div>
+            <input type="text" name="vacuna_notas[]" value="${escM(v.notas ?? '')}"
+                placeholder="Notas"
+                class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-400">
+        `;
+        lista.appendChild(div);
+    });
+
+    lista.querySelectorAll('.btn-quitar-vacuna').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const i = parseInt(btn.dataset.vidx);
+            if (_vacunas[i].id) {
+                _vacunas[i]._delete = true;
+            } else {
+                _vacunas.splice(i, 1);
+            }
+            renderVacunas();
+            lucide.createIcons();
+        });
+    });
+    lucide.createIcons();
+}
+
+async function cargarVacunasMascota(mascotaId) {
+    try {
+        const res  = await fetch(`${BASE_MASCOTA}/listar_vacunas.php?mascota_id=${mascotaId}`);
+        const data = await res.json();
+        _vacunas = data.success ? data.vacunas : [];
+    } catch {
+        _vacunas = [];
+    }
+    renderVacunas();
+}
+
 // ── SVGs de especie ────────────────────────────────────────────────────────────
 const ESPECIE_SVG = {
     Perro: `<svg viewBox="0 0 24 24" fill="none" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
@@ -203,8 +292,25 @@ function crearCardMascota(m) {
                 <span class="inline-flex items-center gap-1 text-xs bg-purple-50 text-purple-600 px-2 py-0.5 rounded-full">
                     <i data-lucide="palette" class="w-3 h-3"></i> ${escM(m.color)}
                 </span>` : ''}
+                ${m.peso ? `
+                <span class="inline-flex items-center gap-1 text-xs bg-green-50 text-green-600 px-2 py-0.5 rounded-full">
+                    <i data-lucide="weight" class="w-3 h-3"></i> ${escM(m.peso)} kg
+                </span>` : ''}
+                ${m.numero_chip ? `
+                <span class="inline-flex items-center gap-1 text-xs bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full">
+                    <i data-lucide="fingerprint" class="w-3 h-3"></i> ${escM(m.numero_chip)}
+                </span>` : ''}
+                ${m.esterilizado == 1 ? `
+                <span class="inline-flex items-center gap-1 text-xs bg-teal-50 text-teal-600 px-2 py-0.5 rounded-full" title="Esterilizado">
+                    <i data-lucide="scissors" class="w-3 h-3"></i> Esterilizado
+                </span>` : ''}
             </div>
 
+            ${m.alergias ? `
+            <div class="flex gap-2 bg-red-50 border border-red-100 rounded-lg p-2">
+                <i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5"></i>
+                <p class="text-xs text-red-700 line-clamp-2"><strong>Alergias:</strong> ${escM(m.alergias)}</p>
+            </div>` : ''}
             ${m.observaciones ? `
             <div class="flex gap-2 bg-amber-50 border border-amber-100 rounded-lg p-2">
                 <i data-lucide="stethoscope" class="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5"></i>
@@ -214,6 +320,10 @@ function crearCardMascota(m) {
 
         <!-- Acciones -->
         <div class="flex gap-0 border-t border-gray-100">
+            <a href="/vetweb/mascota/vista-estado-mascota.php?id=${m.id}" target="_blank"
+                class="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium text-emerald-600 hover:bg-emerald-50 py-2.5 transition border-r border-gray-100">
+                <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Perfil
+            </a>
             <button data-id="${m.id}" data-action="editar-mascota"
                 class="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium text-blue-600 hover:bg-blue-50 py-2.5 transition border-r border-gray-100">
                 <i data-lucide="pencil" class="w-3.5 h-3.5"></i> Editar
@@ -253,6 +363,7 @@ function abrirFormNuevaMascota() {
     document.getElementById('btn-submit-mascota').textContent        = 'Guardar Mascota';
     document.getElementById('mascota-error').classList.add('hidden');
     resetEspecieSelector();
+    resetVacunas();
     document.getElementById('modal-form-mascota').classList.remove('hidden');
     lucide.createIcons();
 }
@@ -272,12 +383,20 @@ async function abrirFormEditarMascota(id) {
         document.getElementById('m_sexo').value             = m.sexo        ?? '';
         document.getElementById('m_color').value            = m.color       ?? '';
         document.getElementById('m_observaciones').value    = m.observaciones ?? '';
+        if (document.getElementById('m_peso')) document.getElementById('m_peso').value = m.peso ?? '';
+        if (document.getElementById('m_chip')) document.getElementById('m_chip').value = m.numero_chip ?? '';
+        if (document.getElementById('m_esterilizado')) document.getElementById('m_esterilizado').checked = m.esterilizado == 1;
+        if (document.getElementById('m_ultima_revision')) document.getElementById('m_ultima_revision').value = m.ultima_revision ?? '';
+        if (document.getElementById('m_alergias')) document.getElementById('m_alergias').value = m.alergias ?? '';
+        if (document.getElementById('m_notas_internas')) document.getElementById('m_notas_internas').value = m.notas_internas ?? '';
 
         // Marcar especie en el selector visual
         document.querySelectorAll('#especie-selector input[type="radio"]').forEach(r => {
             r.checked = (r.value === m.especie);
         });
         actualizarAvatarPreview(m.especie);
+
+        await cargarVacunasMascota(m.id);
 
         document.getElementById('modal-form-mascota-titulo').textContent = 'Editar Mascota';
         document.getElementById('btn-submit-mascota').textContent        = 'Guardar Cambios';
@@ -370,6 +489,14 @@ document.getElementById('btn-cerrar-modal-mascotas').addEventListener('click', (
     });
 });
 document.getElementById('btn-agregar-mascota').addEventListener('click', abrirFormNuevaMascota);
+
+if (document.getElementById('btn-agregar-vacuna')) {
+    document.getElementById('btn-agregar-vacuna').addEventListener('click', () => {
+        _vacunas.push({ id: null, nombre: '', fecha_aplicacion: '', fecha_proxima: '', veterinario: '', lote: '', notas: '' });
+        renderVacunas();
+        lucide.createIcons();
+    });
+}
 
 // ── Delegación clicks en cards ─────────────────────────────────────────────────
 document.getElementById('contenedor-mascotas').addEventListener('click', (e) => {

@@ -3,7 +3,7 @@
 // Responsabilidad: form crear/editar mascota + vacunas inline + modal eliminar
 
 // ── Estado vacunas ─────────────────────────────────────────────────────────────
-let _vacunas = []; // [{ id, nombre, fecha_aplicacion, fecha_proxima, veterinario, notas, _delete }]
+let _vacunas = []; // [{ id, nombre, fecha_aplicacion, fecha_proxima, veterinario, lote, notas, _delete }]
 
 // ── Selector de especie ────────────────────────────────────────────────────────
 function resetEspecieSelector() {
@@ -86,11 +86,16 @@ function renderVacunas() {
                         class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-400">
                 </div>
             </div>
-            <input type="text" name="vacuna_veterinario[]" value="${escM(v.veterinario ?? '')}"
-                placeholder="Veterinario que aplicó"
-                class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-400">
+            <div class="grid grid-cols-2 gap-2">
+                <input type="text" name="vacuna_veterinario[]" value="${escM(v.veterinario ?? '')}"
+                    placeholder="Veterinario"
+                    class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-400">
+                <input type="text" name="vacuna_lote[]" value="${escM(v.lote ?? '')}"
+                    placeholder="Lote"
+                    class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-400">
+            </div>
             <input type="text" name="vacuna_notas[]" value="${escM(v.notas ?? '')}"
-                placeholder="Notas / lote"
+                placeholder="Notas"
                 class="w-full border border-gray-300 rounded-lg px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-brand-400">
         `;
         lista.appendChild(div);
@@ -123,7 +128,7 @@ async function cargarVacunasMascota(mascotaId) {
 }
 
 document.getElementById('btn-agregar-vacuna').addEventListener('click', () => {
-    _vacunas.push({ id: null, nombre: '', fecha_aplicacion: '', fecha_proxima: '', veterinario: '', notas: '' });
+    _vacunas.push({ id: null, nombre: '', fecha_aplicacion: '', fecha_proxima: '', veterinario: '', lote: '', notas: '' });
     renderVacunas();
     lucide.createIcons();
 });

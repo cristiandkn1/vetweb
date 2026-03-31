@@ -85,7 +85,24 @@ function crearCardMascota(m) {
                 <span class="inline-flex items-center gap-1 text-xs bg-purple-50 text-purple-600 px-2 py-0.5 rounded-full">
                     <i data-lucide="palette" class="w-3 h-3"></i> ${escM(m.color)}
                 </span>` : ''}
+                ${m.peso ? `
+                <span class="inline-flex items-center gap-1 text-xs bg-green-50 text-green-600 px-2 py-0.5 rounded-full">
+                    <i data-lucide="weight" class="w-3 h-3"></i> ${escM(m.peso)} kg
+                </span>` : ''}
+                ${m.numero_chip ? `
+                <span class="inline-flex items-center gap-1 text-xs bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full">
+                    <i data-lucide="fingerprint" class="w-3 h-3"></i> ${escM(m.numero_chip)}
+                </span>` : ''}
+                ${m.esterilizado == 1 ? `
+                <span class="inline-flex items-center gap-1 text-xs bg-teal-50 text-teal-600 px-2 py-0.5 rounded-full" title="Esterilizado">
+                    <i data-lucide="scissors" class="w-3 h-3"></i> Esterilizado
+                </span>` : ''}
             </div>
+            ${m.alergias ? `
+            <div class="flex gap-2 bg-red-50 border border-red-100 rounded-lg p-2">
+                <i data-lucide="alert-triangle" class="w-3.5 h-3.5 text-red-500 shrink-0 mt-0.5"></i>
+                <p class="text-xs text-red-700 line-clamp-2"><strong>Alergias:</strong> ${escM(m.alergias)}</p>
+            </div>` : ''}
             ${m.observaciones ? `
             <div class="flex gap-2 bg-amber-50 border border-amber-100 rounded-lg p-2">
                 <i data-lucide="stethoscope" class="w-3.5 h-3.5 text-amber-500 shrink-0 mt-0.5"></i>

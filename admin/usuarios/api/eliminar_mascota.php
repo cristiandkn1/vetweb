@@ -17,22 +17,23 @@ if ($id === 0) {
     echo json_encode(['success' => false, 'message' => 'ID inválido.']);
     exit;
 }
-
 try {
-    // Obtener foto para borrarla del disco
-    $stmt = $pdo->prepare("SELECT foto_url FROM mascota WHERE id = ?");
-    $stmt->execute([$id]);
-    $m = $stmt->fetch(PDO::FETCH_ASSOC);
-    if ($m && $m['foto_url']) {
-        $path = __DIR__ . '/../../../../' . ltrim($m['foto_url'], '/vetweb/');
-        if (file_exists($path))
-            unlink($path);
-    }
+    $pdo->beginTransaction();
 
+    // Eliminar las vacunas asociadas antes de la mascota por si no hay CASCADE
+    $stmt = $pdo->prepare("DELETE FROM vacuna WHERE mascota_id = ?");
+    $stmt->execute([$id]);
+
+    // Eliminar la mascota
     $stmt = $pdo->prepare("DELETE FROM mascota WHERE id = ?");
     $stmt->execute([$id]);
+
+    $pdo->commit();
     echo json_encode(['success' => true, 'message' => 'Mascota eliminada correctamente.']);
 } catch (PDOException $e) {
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
     error_log("Error eliminar_mascota: " . $e->getMessage());
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'Error al eliminar la mascota.']);
