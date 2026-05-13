@@ -1,6 +1,6 @@
 // admin/usuarios/scripts/mascotas.js
 
-const BASE_MASCOTA = '/vetweb/admin/usuarios/api';
+const BASE_MASCOTA = '/admin/usuarios/api';
 
 window.MascotaState = {
     clienteId:     null,
@@ -320,7 +320,7 @@ function crearCardMascota(m) {
 
         <!-- Acciones -->
         <div class="flex gap-0 border-t border-gray-100">
-            <a href="/vetweb/mascota/vista-estado-mascota.php?id=${m.id}" target="_blank"
+            <a href="/mascota/vista-estado-mascota.php?id=${m.id}" target="_blank"
                 class="flex-1 flex items-center justify-center gap-1.5 text-xs font-medium text-emerald-600 hover:bg-emerald-50 py-2.5 transition border-r border-gray-100">
                 <i data-lucide="external-link" class="w-3.5 h-3.5"></i> Perfil
             </a>

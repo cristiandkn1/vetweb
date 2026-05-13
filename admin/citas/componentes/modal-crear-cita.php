@@ -79,7 +79,7 @@ try {
                     <div>
                         <div class="flex justify-between items-center mb-3">
                             <h4 class="text-sm font-bold text-brand-600 uppercase tracking-wide">2. Mascota</h4>
-                            <a id="btn-nueva-mascota" href="/vetweb/admin/usuarios/usuarios.php"
+                            <a id="btn-nueva-mascota" href="/admin/usuarios/usuarios.php"
                                 class="text-xs text-brand-600 hover:text-brand-800 font-medium flex items-center gap-1">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"

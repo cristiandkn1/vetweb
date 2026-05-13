@@ -2,7 +2,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    const BASE       = '/vetweb/admin/citas/api';
+    const BASE       = '/admin/citas/api';
     const contenedor = document.getElementById('contenedor-citas');
 
     let todasLasCitas = [];
@@ -148,7 +148,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <option value="cancelada"  ${c.estado === 'cancelada'  ? 'selected' : ''}>Cancelada</option>
                 </select>
                 
-                <a href="/vetweb/citas/seguimiento_cita.php?token=${c.token_publico}" target="_blank" title="Abrir página compartible"
+                <a href="/citas/seguimiento_cita.php?token=${c.token_publico}" target="_blank" title="Abrir página compartible"
                     class="px-2 py-1.5 text-[11px] font-medium text-brand-600 hover:text-brand-800 bg-brand-50 hover:bg-brand-100 rounded transition-colors flex items-center gap-1">
                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/></svg>
                 </a>

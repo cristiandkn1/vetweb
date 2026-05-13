@@ -1,7 +1,7 @@
 // admin/usuarios/scripts/mascotas-config.js
 // Constantes, estado global, SVGs, colores y helpers compartidos
 
-const BASE_MASCOTA = '/vetweb/admin/usuarios/api';
+const BASE_MASCOTA = '/admin/usuarios/api';
 
 window.MascotaState = {
     clienteId:     null,

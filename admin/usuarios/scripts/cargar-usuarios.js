@@ -1,7 +1,7 @@
 // admin/usuario/scripts/cargar-usuarios.js
 // Responsabilidad: cargar usuarios desde la API, filtrar y paginar
 
-const BASE_USUARIO = '/vetweb/admin/usuarios/api';
+const BASE_USUARIO = '/admin/usuarios/api';
 const POR_PAGINA   = 10;
 
 window.UsuarioState = {

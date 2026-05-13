@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             try {
-                const res  = await fetch(`/vetweb/admin/citas/api/buscar_cliente.php?q=C_${c_id}`);
+                const res  = await fetch(`/admin/citas/api/buscar_cliente.php?q=C_${c_id}`);
                 const data = await res.json();
                 
                 if (data.success && data.mascota && data.mascota.length > 0) {
@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         setLoading(true);
         try {
-            const res  = await fetch('/vetweb/admin/citas/api/crear_cita.php', { method: 'POST', body: formData });
+            const res  = await fetch('/admin/citas/api/crear_cita.php', { method: 'POST', body: formData });
             const data = await res.json();
 
             if (data.success) {

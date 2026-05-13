@@ -69,7 +69,7 @@ try {
     // URL del link de seguimiento
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     $host = $_SERVER['HTTP_HOST'];
-    $link = "{$protocol}://{$host}/vetweb/citas/seguimiento_cita.php?token={$token}";
+    $link = "{$protocol}://{$host}/citas/seguimiento_cita.php?token={$token}";
 
     echo json_encode([
         'success' => true,

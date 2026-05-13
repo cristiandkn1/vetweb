@@ -2,7 +2,7 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    const BASE = '/vetweb/admin/servicios/api';
+    const BASE = '/admin/servicios/api';
 
     // ── DOM ────────────────────────────────────────────────────────────────────
     const btnAbrir      = document.getElementById('btn-nuevo-servicio');
