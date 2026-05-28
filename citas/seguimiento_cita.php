@@ -1,6 +1,9 @@
 <?php
 // vetweb/citas/seguimiento_cita.php
+session_start();
 require_once __DIR__ . '/../includes/db.php';
+
+$isLoggedIn = isset($_SESSION['user_id']);
 
 $token = trim($_GET['token'] ?? '');
 
@@ -11,7 +14,7 @@ if (empty($token) || strlen($token) !== 48) {
 // Obtener datos de la cita, mascota y cliente
 $stmt = $pdo->prepare("
     SELECT 
-        c.id as cita_id, c.fecha, c.tipo, c.nota, c.estado, c.created_at, c.precio_final, c.observaciones_vet, c.pagado,
+        c.id as cita_id, c.fecha, c.tipo, c.nota, c.recomendaciones, c.estado, c.created_at, c.precio_final, c.observaciones_vet, c.pagado,
         m.nombre as mascota_nombre, m.especie as mascota_especie, m.raza as mascota_raza,
         cl.nombre_completo as cliente_nombre
     FROM citas c
@@ -26,6 +29,11 @@ $cita = $stmt->fetch(PDO::FETCH_ASSOC);
 if (!$cita) {
     die("Cita no encontrada. Por favor comuníquese con la clínica.");
 }
+
+// Obtener bitácora de la cita
+$stmtBitacora = $pdo->prepare("SELECT id, hora, comentario FROM cita_bitacora WHERE cita_id = ? ORDER BY hora ASC, id ASC");
+$stmtBitacora->execute([$cita['cita_id']]);
+$bitacora = $stmtBitacora->fetchAll(PDO::FETCH_ASSOC);
 
 // Configuración de visualización por estado
 $estado_config = [
@@ -46,7 +54,8 @@ $fecha_formateada = $fecha_obj->format('d/m/Y');
 $hora_formateada = $fecha_obj->format('h:i A');
 
 // Formato chileno de moneda: $ 15.000 sin decimales
-$precio_formateado = '$' . number_format($cita['precio_final'], 0, ',', '.');
+$precio_final = $cita['precio_final'] ?? null;
+$precio_formateado = $precio_final !== null ? '$' . number_format((float) $precio_final, 0, ',', '.') : '—';
 ?>
 <!DOCTYPE html>
 <html lang="es">
@@ -56,6 +65,7 @@ $precio_formateado = '$' . number_format($cita['precio_final'], 0, ',', '.');
     <title>Seguimiento de Cita - VetWeb</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -163,6 +173,35 @@ $precio_formateado = '$' . number_format($cita['precio_final'], 0, ',', '.');
                 </div>
             </div>
 
+            <?php if (!empty($bitacora)): ?>
+            <div class="mb-8">
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="h-px bg-violet-200 flex-1"></div>
+                    <span class="text-xs font-bold text-violet-500 uppercase tracking-widest text-center flex items-center gap-1.5"><i data-lucide="clock" class="w-3.5 h-3.5"></i> Bitácora de la Cita</span>
+                    <div class="h-px bg-violet-200 flex-1"></div>
+                </div>
+                <div class="space-y-3">
+                    <?php foreach ($bitacora as $b): ?>
+                    <div class="flex items-start gap-4 bg-white rounded-xl p-4 border border-violet-100 shadow-sm">
+                        <div class="w-16 shrink-0 text-center">
+                            <span class="text-xs font-bold text-violet-600 bg-violet-50 px-2 py-1 rounded-md border border-violet-200"><?php echo htmlspecialchars(substr($b['hora'], 0, 5)); ?></span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm text-slate-700 leading-relaxed"><?php echo nl2br(htmlspecialchars($b['comentario'])); ?></p>
+                        </div>
+                    </div>
+                    <?php endforeach; ?>
+                </div>
+            </div>
+            <?php endif; ?>
+
+            <?php if (!empty($cita['recomendaciones'])): ?>
+            <div class="mb-8 bg-sky-50 rounded-2xl p-5 border border-sky-100/60 shadow-sm">
+                <p class="text-xs font-bold text-sky-500 uppercase tracking-wider flex items-center gap-1.5 mb-2"><i data-lucide="clipboard-list" class="w-4 h-4"></i> Recomendaciones / Pasos a Seguir</p>
+                <p class="text-base font-medium text-sky-900 leading-relaxed italic border-l-4 border-sky-300 pl-4 ml-1">"<?php echo nl2br(htmlspecialchars($cita['recomendaciones'])); ?>"</p>
+            </div>
+            <?php endif; ?>
+
             <?php if (!empty($cita['nota'])): ?>
             <div class="mb-8 bg-amber-50 rounded-2xl p-5 border border-amber-100/60 shadow-sm">
                 <p class="text-xs font-bold text-amber-500 uppercase tracking-wider flex items-center gap-1.5 mb-2"><i data-lucide="message-square" class="w-4 h-4"></i> Notas Ingreso / Recepción</p>
@@ -218,6 +257,34 @@ $precio_formateado = '$' . number_format($cita['precio_final'], 0, ',', '.');
             </div>
             <?php endif; ?>
 
+            <?php if ($isLoggedIn): ?>
+            <!-- Notas Internas del Equipo (solo staff) -->
+            <div class="mt-10" id="seccion-notas-internas">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="h-px bg-slate-200 flex-1"></div>
+                    <span class="text-sm font-bold text-slate-400 uppercase tracking-widest text-center flex items-center gap-1.5">
+                        <i data-lucide="message-circle" class="w-4 h-4"></i> Notas Internas del Equipo
+                    </span>
+                    <div class="h-px bg-slate-200 flex-1"></div>
+                </div>
+
+                <div id="lista-notas-internas" class="space-y-3 mb-4">
+                    <div class="text-center text-sm text-slate-400 py-4">Cargando notas...</div>
+                </div>
+
+                <div class="bg-white rounded-xl border border-slate-200 p-4 shadow-sm">
+                    <textarea id="input-nota-interna" rows="2" placeholder="Escribe una nota para el equipo (procedimientos, observaciones, recomendaciones)..."
+                        class="w-full text-sm border border-slate-200 rounded-lg p-3 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent"></textarea>
+                    <div class="flex justify-end mt-2">
+                        <button id="btn-enviar-nota" onclick="enviarNotaInterna()"
+                            class="inline-flex items-center gap-1.5 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg transition-colors shadow-sm">
+                            <i data-lucide="send" class="w-4 h-4"></i> Enviar
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <?php endif; ?>
+
             <!-- Mensaje Personalizado -->
             <p class="text-center text-sm font-semibold text-slate-600 mt-8 mb-2">
                 ¡Hola <span class="text-indigo-600"><?php echo htmlspecialchars(explode(' ', $cita['cliente_nombre'])[0]); ?></span>!
@@ -253,7 +320,182 @@ $precio_formateado = '$' . number_format($cita['precio_final'], 0, ',', '.');
 
 <script>
     lucide.createIcons();
-    setTimeout(() => window.location.reload(), 30000);
+
+    // Auto-refresh inteligente: se pausa si el usuario está escribiendo
+    let refreshTimer = setTimeout(() => window.location.reload(), 30000);
+    function resetRefresh() {
+        clearTimeout(refreshTimer);
+        refreshTimer = setTimeout(() => window.location.reload(), 30000);
+    }
+    document.addEventListener('focusin', (e) => {
+        if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') {
+            clearTimeout(refreshTimer);
+        }
+    });
+    document.addEventListener('focusout', (e) => {
+        if (e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT') {
+            resetRefresh();
+        }
+    });
+
+    <?php if ($isLoggedIn): ?>
+    const CITA_ID = <?php echo json_encode($cita['cita_id']); ?>;
+    const USER_ID = <?php echo json_encode($_SESSION['user_id']); ?>;
+
+    async function cargarNotasInternas() {
+        const container = document.getElementById('lista-notas-internas');
+        try {
+            const res = await fetch(`/admin/citas/api/notas_internas.php?cita_id=${CITA_ID}`);
+            const data = await res.json();
+            if (!data.success) { container.innerHTML = '<div class="text-center text-sm text-red-400 py-4">Error al cargar notas.</div>'; return; }
+            if (!data.notas || data.notas.length === 0) {
+                container.innerHTML = '<div class="text-center text-sm text-slate-400 py-4 italic">Sin notas internas aún.</div>';
+                return;
+            }
+            container.innerHTML = data.notas.map(n => `
+                <div class="flex items-start gap-3 bg-white rounded-xl p-4 border border-slate-100 shadow-sm nota-item" data-id="${n.id}">
+                    <div class="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center shrink-0 text-xs font-bold">${n.user_name.charAt(0).toUpperCase()}</div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center justify-between gap-2 mb-1">
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-bold text-indigo-600">${escHtml(n.user_name)}</span>
+                                <span class="text-[10px] text-slate-400">${new Date(n.created_at).toLocaleString('es-CL', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })}</span>
+                            </div>
+                            ${parseInt(n.user_id) === USER_ID ? `<div class="flex items-center gap-1 nota-acciones">
+                                <button onclick="editarNota(${n.id}, this)" class="p-1 text-slate-400 hover:text-indigo-600 transition-colors" title="Editar"><i data-lucide="pencil" class="w-3.5 h-3.5"></i></button>
+                                <button onclick="eliminarNota(${n.id}, this)" class="p-1 text-slate-400 hover:text-red-500 transition-colors" title="Eliminar"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+                            </div>` : ''}
+                        </div>
+                        <div class="nota-contenido" data-id="${n.id}">
+                            <p class="text-sm text-slate-700 leading-relaxed">${escHtml(n.mensaje)}</p>
+                        </div>
+                        <div class="nota-editor hidden" data-id="${n.id}">
+                            <textarea class="w-full text-sm border border-indigo-300 rounded-lg p-2 resize-none focus:outline-none focus:ring-2 focus:ring-indigo-400" rows="2">${escHtml(n.mensaje)}</textarea>
+                            <div class="flex justify-end gap-2 mt-1.5">
+                                <button onclick="cancelarEditarNota(${n.id}, this)" class="px-2.5 py-1 text-xs font-medium text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-md transition-colors">Cancelar</button>
+                                <button onclick="guardarEditarNota(${n.id}, this)" class="px-2.5 py-1 text-xs font-medium text-white bg-indigo-600 hover:bg-indigo-700 rounded-md transition-colors">Guardar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        } catch {
+            container.innerHTML = '<div class="text-center text-sm text-red-400 py-4">Error de conexión.</div>';
+        }
+    }
+
+    async function enviarNotaInterna() {
+        const input = document.getElementById('input-nota-interna');
+        const mensaje = input.value.trim();
+        if (!mensaje) return;
+
+        const btn = document.getElementById('btn-enviar-nota');
+        btn.disabled = true;
+        btn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Enviando...';
+
+        try {
+            const res = await fetch('/admin/citas/api/notas_internas.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ cita_id: CITA_ID, mensaje })
+            });
+            const data = await res.json();
+            if (data.success) {
+                input.value = '';
+                cargarNotasInternas();
+            } else {
+                Swal.fire({ icon: 'error', title: 'Error', text: data.message || 'Error al enviar nota.', confirmButtonColor: '#4f46e5' });
+            }
+        } catch {
+            Swal.fire({ icon: 'error', title: 'Error de conexión', text: 'No se pudo conectar con el servidor.', confirmButtonColor: '#4f46e5' });
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<i data-lucide="send" class="w-4 h-4"></i> Enviar';
+            lucide.createIcons();
+        }
+    }
+
+    function editarNota(id, btn) {
+        const nota = btn.closest('.nota-item');
+        nota.querySelector('.nota-contenido').classList.add('hidden');
+        nota.querySelector('.nota-editor').classList.remove('hidden');
+        nota.querySelector('.nota-editor textarea').focus();
+    }
+
+    function cancelarEditarNota(id, btn) {
+        const nota = btn.closest('.nota-item');
+        nota.querySelector('.nota-editor').classList.add('hidden');
+        nota.querySelector('.nota-contenido').classList.remove('hidden');
+    }
+
+    async function guardarEditarNota(id, btn) {
+        const nota = btn.closest('.nota-item');
+        const textarea = nota.querySelector('.nota-editor textarea');
+        const mensaje = textarea.value.trim();
+        if (!mensaje) return;
+
+        const guardarBtn = btn;
+        guardarBtn.disabled = true;
+        guardarBtn.textContent = 'Guardando...';
+
+        try {
+            const res = await fetch('/admin/citas/api/notas_internas.php', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id, mensaje })
+            });
+            const data = await res.json();
+            if (data.success) {
+                cargarNotasInternas();
+            } else {
+                Swal.fire({ icon: 'error', title: 'Error', text: data.message || 'No se pudo editar.', confirmButtonColor: '#4f46e5' });
+                guardarBtn.disabled = false;
+                guardarBtn.textContent = 'Guardar';
+            }
+        } catch {
+            Swal.fire({ icon: 'error', title: 'Error de conexión', text: 'No se pudo conectar.', confirmButtonColor: '#4f46e5' });
+            guardarBtn.disabled = false;
+            guardarBtn.textContent = 'Guardar';
+        }
+    }
+
+    async function eliminarNota(id, btn) {
+        const result = await Swal.fire({
+            title: '¿Eliminar nota?',
+            text: 'Esta acción no se puede deshacer.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#dc2626',
+            cancelButtonColor: '#6b7280',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true
+        });
+        if (!result.isConfirmed) return;
+
+        try {
+            const res = await fetch('/admin/citas/api/notas_internas.php', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id })
+            });
+            const data = await res.json();
+            if (data.success) {
+                Swal.fire({ icon: 'success', title: 'Eliminada', text: 'La nota se eliminó correctamente.', timer: 2000, timerProgressBar: true, showConfirmButton: false });
+                cargarNotasInternas();
+            } else {
+                Swal.fire({ icon: 'error', title: 'Error', text: data.message || 'No se pudo eliminar.', confirmButtonColor: '#4f46e5' });
+            }
+        } catch {
+            Swal.fire({ icon: 'error', title: 'Error de conexión', text: 'No se pudo conectar.', confirmButtonColor: '#4f46e5' });
+        }
+    }
+
+    function escHtml(str) { if (!str) return ''; return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    document.addEventListener('DOMContentLoaded', cargarNotasInternas);
+    <?php endif; ?>
 </script>
 </body>
 </html>

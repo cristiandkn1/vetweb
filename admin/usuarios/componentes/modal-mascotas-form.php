@@ -145,6 +145,13 @@
                                 </label>
 
                             </div><!-- /especie-selector -->
+
+                            <div id="especie-otro-wrapper" class="hidden mt-2">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Especificar especie</label>
+                                <input type="text" name="especie_otro" id="m_especie_otro"
+                                    placeholder="Ej: Hurón, Cerdo vietnamita, Equino..."
+                                    class="w-full border border-brand-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-400 bg-brand-50">
+                            </div>
                         </div>
 
                         <div>

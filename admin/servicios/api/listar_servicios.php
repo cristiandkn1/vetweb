@@ -6,7 +6,7 @@ header('Content-Type: application/json');
 
 try {
     $stmt = $pdo->query(
-        "SELECT id, nombre, descripcion, precio_min, precio_max, duracion_min, activo
+        "SELECT id, nombre, descripcion, precio_min, precio_max, duracion_min, activo, icono
          FROM servicios
          ORDER BY nombre ASC"
     );

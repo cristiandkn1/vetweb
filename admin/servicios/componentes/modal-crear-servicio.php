@@ -76,6 +76,12 @@
                             al agendar citas)</label>
                     </div>
 
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Icono <span class="text-gray-400 font-normal">(opcional)</span></label>
+                        <input type="hidden" id="servicio_icono" name="icono" value="">
+                        <div id="icono-picker" class="grid grid-cols-5 sm:grid-cols-7 gap-2"></div>
+                    </div>
+
                     <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 -mx-6 -mb-6 mt-4 rounded-b-lg">
                         <button type="submit" id="btn-submit-servicio"
                             class="inline-flex w-full justify-center rounded-md bg-brand-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-brand-500 sm:ml-3 sm:w-auto">

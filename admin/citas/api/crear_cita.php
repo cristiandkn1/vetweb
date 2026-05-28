@@ -64,12 +64,41 @@ try {
     $ins->execute([$cliente_id, $mascota_id, $cita_fecha, $cita_tipo, $cita_nota ?: null, $token]);
     $cita_id = (int) $pdo->lastInsertId();
 
+    // 5. Generar cotización automática
+    // Obtener precios del servicio
+    $stmtSvc = $pdo->prepare("SELECT precio_min, precio_max FROM servicios WHERE nombre = ? AND activo = 1 LIMIT 1");
+    $stmtSvc->execute([$cita_tipo]);
+    $servicio = $stmtSvc->fetch(PDO::FETCH_ASSOC);
+    $precio_min = $servicio ? (float)$servicio['precio_min'] : 0;
+    $precio_max = $servicio ? (float)$servicio['precio_max'] : 0;
+
+    // Generar número de cotización: COT-YYYY-NNNN
+    $year = date('Y');
+    $stmtCount = $pdo->prepare("SELECT COUNT(*) FROM cotizaciones WHERE YEAR(created_at) = ?");
+    $stmtCount->execute([$year]);
+    $count = (int)$stmtCount->fetchColumn();
+    $numero = 'COT-' . $year . '-' . str_pad($count + 1, 4, '0', STR_PAD_LEFT);
+
+    $insCot = $pdo->prepare("
+        INSERT INTO cotizaciones (numero_cotizacion, cita_id, cliente_id, mascota_id, servicio, precio_estimado_min, precio_estimado_max, nota, estado, created_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'pendiente', NOW())
+    ");
+    $insCot->execute([$numero, $cita_id, $cliente_id, $mascota_id, $cita_tipo, $precio_min ?: null, $precio_max ?: null, $cita_nota ?: null]);
+    $cotizacion_id = (int) $pdo->lastInsertId();
+
+    // Insertar primer detalle de cotización
+    $precio_detalle = max($precio_min, $precio_max);
+    $insDet = $pdo->prepare("INSERT INTO cotizacion_detalles (cotizacion_id, descripcion, cantidad, precio_unitario, afecto_iva) VALUES (?, ?, 1, ?, 1)");
+    $insDet->execute([$cotizacion_id, $cita_tipo, $precio_detalle > 0 ? $precio_detalle : 0]);
+
     $pdo->commit();
 
     // URL del link de seguimiento
     $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
     $host = $_SERVER['HTTP_HOST'];
     $link = "{$protocol}://{$host}/citas/seguimiento_cita.php?token={$token}";
+
+    $link_cotizacion = "{$protocol}://{$host}/admin/cotizaciones/ver_cotizacion.php?id={$cotizacion_id}";
 
     echo json_encode([
         'success' => true,
@@ -78,6 +107,8 @@ try {
         'cliente_id' => $cliente_id,
         'mascota_id' => $mascota_id,
         'link_seguimiento' => $link,
+        'link_cotizacion' => $link_cotizacion,
+        'numero_cotizacion' => $numero,
     ]);
 
 } catch (PDOException $e) {

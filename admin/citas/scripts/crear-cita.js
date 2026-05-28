@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (data.success) {
                 toggleModal(false);
-                mostrarModalLink(data.link_seguimiento);
+                mostrarModalLink(data.link_seguimiento, data.link_cotizacion, data.numero_cotizacion);
             } else {
                 showError(data.message || 'Ocurrió un error al guardar la cita.');
             }
@@ -134,7 +134,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ── Modal de link de seguimiento ───────────────────────────────────────────
-    function mostrarModalLink(link) {
+    function mostrarModalLink(link, cotizacionLink, cotizacionNumero) {
         // Crear modal si no existe
         let ml = document.getElementById('modal-link-seguimiento');
         if (!ml) {
@@ -147,22 +147,36 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="text-5xl mb-3">🎉</div>
                     <h3 class="text-xl font-bold text-gray-800 mb-1">¡Cita agendada!</h3>
                     <p class="text-gray-500 text-sm mb-5">
-                        Comparte este enlace con el cliente para que pueda seguir el estado de su cita.
+                        Comparte estos enlaces con el cliente.
                     </p>
 
-                    <div class="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl p-3 mb-4">
-                        <input id="input-link-seguimiento" type="text" readonly
-                            class="flex-1 text-xs text-gray-700 bg-transparent outline-none truncate">
-                        <button id="btn-copiar-link"
-                            class="shrink-0 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition">
-                            Copiar
-                        </button>
+                    <div class="text-left mb-3">
+                        <p class="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">🔗 Seguimiento de Cita</p>
+                        <div class="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-xl p-3">
+                            <input id="input-link-seguimiento" type="text" readonly
+                                class="flex-1 text-xs text-gray-700 bg-transparent outline-none truncate">
+                            <button id="btn-copiar-link"
+                                class="shrink-0 bg-brand-600 hover:bg-brand-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition">
+                                Copiar
+                            </button>
+                        </div>
                     </div>
 
-                    <a id="btn-abrir-link" href="#" target="_blank"
-                        class="block text-xs text-brand-600 hover:underline mb-6">
-                        Abrir enlace ↗
-                    </a>
+                    <div class="text-left mb-4">
+                        <p class="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-2">📄 Cotización</p>
+                        <div class="flex items-center gap-2 bg-emerald-50 border border-emerald-200 rounded-xl p-3">
+                            <input id="input-link-cotizacion" type="text" readonly
+                                class="flex-1 text-xs text-gray-700 bg-transparent outline-none truncate">
+                            <button id="btn-copiar-link-cotizacion"
+                                class="shrink-0 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition">
+                                Copiar
+                            </button>
+                        </div>
+                        <a id="btn-abrir-cotizacion" href="#" target="_blank"
+                            class="inline-block text-xs text-emerald-600 hover:underline mt-1">
+                            Abrir cotización ↗
+                        </a>
+                    </div>
 
                     <button id="btn-cerrar-link"
                         class="w-full bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-2.5 rounded-xl transition text-sm">
@@ -179,6 +193,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             });
 
+            document.getElementById('btn-copiar-link-cotizacion')?.addEventListener('click', () => {
+                const inp = document.getElementById('input-link-cotizacion');
+                navigator.clipboard.writeText(inp.value).then(() => {
+                    document.getElementById('btn-copiar-link-cotizacion').textContent = '¡Copiado!';
+                    setTimeout(() => document.getElementById('btn-copiar-link-cotizacion').textContent = 'Copiar', 2000);
+                });
+            });
+
             document.getElementById('btn-cerrar-link').addEventListener('click', () => {
                 ml.remove();
                 window.location.reload();
@@ -186,7 +208,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         document.getElementById('input-link-seguimiento').value = link;
-        document.getElementById('btn-abrir-link').href = link;
+        document.getElementById('input-link-cotizacion').value = cotizacionLink || '';
+        const btnAbrirCot = document.getElementById('btn-abrir-cotizacion');
+        if (btnAbrirCot) btnAbrirCot.href = cotizacionLink || '#';
         ml.classList.remove('hidden');
     }
 

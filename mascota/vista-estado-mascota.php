@@ -2,35 +2,49 @@
 // /mascota/vista-estado-mascota.php
 require_once __DIR__ . '/../includes/db.php';
 
-$id = intval($_GET['id'] ?? 0);
-
-if ($id === 0) {
-    die("ID de mascota no proporcionado.");
+$token = trim($_GET['token'] ?? '');
+if ($token === '') {
+    // Fallback por ID solo si viene de admin (session activa)
+    session_start();
+    if (isset($_SESSION['user_id'])) {
+        $id = intval($_GET['id'] ?? 0);
+        if ($id === 0) {
+            die("Token o ID de mascota no proporcionado.");
+        }
+        $stmt = $pdo->prepare("SELECT m.*, c.nombre_completo as cliente_nombres, c.telefono as cliente_telefono FROM mascota m LEFT JOIN cliente c ON m.cliente_id = c.id WHERE m.id = ?");
+        $stmt->execute([$id]);
+    } else {
+        die("Token de mascota no proporcionado.");
+    }
+} else {
+    $stmt = $pdo->prepare("SELECT m.*, c.nombre_completo as cliente_nombres, c.telefono as cliente_telefono FROM mascota m LEFT JOIN cliente c ON m.cliente_id = c.id WHERE m.token_publico = ?");
+    $stmt->execute([$token]);
 }
-
-// Obtener detalles de la mascota y su dueño
-$stmt = $pdo->prepare("
-    SELECT m.*, c.nombre_completo as cliente_nombres, c.telefono as cliente_telefono 
-    FROM mascota m
-    LEFT JOIN cliente c ON m.cliente_id = c.id
-    WHERE m.id = ?
-");
-$stmt->execute([$id]);
 $mascota = $stmt->fetch(PDO::FETCH_ASSOC);
 
 if (!$mascota) {
-    $stmt = $pdo->prepare("SELECT * FROM mascota WHERE id = ?");
-    $stmt->execute([$id]);
-    $mascota = $stmt->fetch(PDO::FETCH_ASSOC);
+    $id = intval($_GET['id'] ?? 0);
+    if ($id > 0) {
+        $stmt = $pdo->prepare("SELECT * FROM mascota WHERE id = ?");
+        $stmt->execute([$id]);
+        $mascota = $stmt->fetch(PDO::FETCH_ASSOC);
+    }
     if (!$mascota) {
         die("Mascota no encontrada en el sistema.");
     }
 }
 
+$mascotaId = $mascota['id'];
+
 // Obtener vacunas
 $stmtVacunas = $pdo->prepare("SELECT * FROM vacuna WHERE mascota_id = ? ORDER BY fecha_aplicacion DESC");
-$stmtVacunas->execute([$id]);
+$stmtVacunas->execute([$mascotaId]);
 $vacunas = $stmtVacunas->fetchAll(PDO::FETCH_ASSOC);
+
+// Obtener historial de citas
+$stmtCitas = $pdo->prepare("SELECT c.id, c.fecha, c.tipo, c.estado, c.token_publico FROM citas c WHERE c.mascota_id = ? AND c.oculta = 0 ORDER BY c.fecha DESC LIMIT 10");
+$stmtCitas->execute([$mascotaId]);
+$citas = $stmtCitas->fetchAll(PDO::FETCH_ASSOC);
 
 function calcularEdadStr($fechaNac) {
     if (!$fechaNac) return 'Desconocida';
@@ -114,6 +128,41 @@ $edad = calcularEdadStr($mascota['fecha_nacimiento']);
                     <i data-lucide="alert-triangle" class="w-4 h-4"></i> Alergias Conocidas
                 </h3>
                 <p class="text-red-700 text-sm italic"><?php echo nl2br(htmlspecialchars($mascota['alergias'])); ?></p>
+            </div>
+            <?php endif; ?>
+
+            <?php if (count($citas) > 0): ?>
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+                <h3 class="text-sm font-semibold text-gray-400 uppercase tracking-wider mb-3 border-b border-gray-50 pb-2 flex items-center gap-2">
+                    <i data-lucide="calendar" class="w-4 h-4"></i> Historial de Citas
+                </h3>
+                <ul class="space-y-2">
+                    <?php foreach ($citas as $c): 
+                        $estadoCls = match($c['estado']) {
+                            'pendiente'  => 'bg-yellow-100 text-yellow-700',
+                            'confirmada' => 'bg-blue-100 text-blue-700',
+                            'completada' => 'bg-green-100 text-green-700',
+                            'cancelada'  => 'bg-red-100 text-red-600',
+                            default      => 'bg-gray-100 text-gray-600'
+                        };
+                    ?>
+                    <li class="flex items-center justify-between gap-2 p-2.5 rounded-xl hover:bg-gray-50 transition-colors border border-gray-50">
+                        <div class="flex-1 min-w-0">
+                            <p class="text-xs text-gray-400"><?php echo date('d/m/Y H:i', strtotime($c['fecha'])); ?></p>
+                            <p class="text-sm font-medium text-gray-700 truncate"><?php echo htmlspecialchars($c['tipo']); ?></p>
+                        </div>
+                        <div class="flex items-center gap-1.5 shrink-0">
+                            <span class="text-[10px] font-medium px-1.5 py-0.5 rounded-full <?php echo $estadoCls; ?>"><?php echo ucfirst($c['estado']); ?></span>
+                            <?php if (!empty($c['token_publico'])): ?>
+                            <a href="/citas/seguimiento_cita.php?token=<?php echo urlencode($c['token_publico']); ?>" target="_blank" title="Ver seguimiento"
+                                class="p-1 text-brand-600 hover:text-brand-800 bg-brand-50 hover:bg-brand-100 rounded transition-colors">
+                                <i data-lucide="external-link" class="w-3 h-3"></i>
+                            </a>
+                            <?php endif; ?>
+                        </div>
+                    </li>
+                    <?php endforeach; ?>
+                </ul>
             </div>
             <?php endif; ?>
         </div>

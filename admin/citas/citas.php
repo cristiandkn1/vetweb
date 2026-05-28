@@ -52,33 +52,77 @@ if (!isset($_SESSION['user_id'])) {
                     </div>
                 </div>
 
-                <!-- Filtros de estado -->
-                <div class="flex flex-wrap gap-2 mb-6" id="filtros-estado">
-                    <button data-estado="todos"
-                        class="filtro-btn activo px-4 py-1.5 rounded-full text-sm font-medium bg-brand-600 text-white transition-colors">
-                        Todas
-                    </button>
-                    <button data-estado="pendiente"
-                        class="filtro-btn px-4 py-1.5 rounded-full text-sm font-medium bg-white text-gray-600 border border-gray-200 hover:border-brand-400 transition-colors">
-                        Pendientes
-                    </button>
-                    <button data-estado="confirmada"
-                        class="filtro-btn px-4 py-1.5 rounded-full text-sm font-medium bg-white text-gray-600 border border-gray-200 hover:border-brand-400 transition-colors">
-                        Confirmadas
-                    </button>
-                    <button data-estado="completada"
-                        class="filtro-btn px-4 py-1.5 rounded-full text-sm font-medium bg-white text-gray-600 border border-gray-200 hover:border-brand-400 transition-colors">
-                        Completadas
-                    </button>
-                    <button data-estado="cancelada"
-                        class="filtro-btn px-4 py-1.5 rounded-full text-sm font-medium bg-white text-gray-600 border border-gray-200 hover:border-brand-400 transition-colors">
-                        Canceladas
-                    </button>
+                <!-- KPIs -->
+                <div id="kpi-container" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-6">
+                    <div class="kpi-card bg-white rounded-xl border border-gray-100 p-4 text-center">
+                        <div class="text-2xl font-bold text-brand-600" data-kpi="total">—</div>
+                        <div class="text-xs text-gray-400 uppercase tracking-wide mt-1">Total</div>
+                    </div>
+                    <div class="kpi-card bg-white rounded-xl border border-gray-100 p-4 text-center">
+                        <div class="text-2xl font-bold text-amber-600" data-kpi="pendientes">—</div>
+                        <div class="text-xs text-gray-400 uppercase tracking-wide mt-1">Pendientes</div>
+                    </div>
+                    <div class="kpi-card bg-white rounded-xl border border-gray-100 p-4 text-center">
+                        <div class="text-2xl font-bold text-blue-600" data-kpi="confirmadas">—</div>
+                        <div class="text-xs text-gray-400 uppercase tracking-wide mt-1">Confirmadas</div>
+                    </div>
+                    <div class="kpi-card bg-white rounded-xl border border-gray-100 p-4 text-center">
+                        <div class="text-2xl font-bold text-emerald-600" data-kpi="completadas">—</div>
+                        <div class="text-xs text-gray-400 uppercase tracking-wide mt-1">Completadas</div>
+                    </div>
+                    <div class="kpi-card bg-white rounded-xl border border-gray-100 p-4 text-center">
+                        <div class="text-2xl font-bold text-red-500" data-kpi="canceladas">—</div>
+                        <div class="text-xs text-gray-400 uppercase tracking-wide mt-1">Canceladas</div>
+                    </div>
+                    <div class="kpi-card bg-white rounded-xl border border-gray-100 p-4 text-center">
+                        <div class="text-2xl font-bold text-indigo-600" data-kpi="hoy">—</div>
+                        <div class="text-xs text-gray-400 uppercase tracking-wide mt-1">Hoy</div>
+                    </div>
+                </div>
+
+                <!-- Filtros -->
+                <div class="flex flex-wrap items-center gap-3 mb-6">
+                    <!-- Estado -->
+                    <div class="flex flex-wrap gap-2" id="filtros-estado">
+                        <button data-estado="todos"
+                            class="filtro-btn activo px-4 py-1.5 rounded-full text-sm font-medium bg-brand-600 text-white transition-colors">
+                            Todas
+                        </button>
+                        <button data-estado="pendiente"
+                            class="filtro-btn px-4 py-1.5 rounded-full text-sm font-medium bg-white text-gray-600 border border-gray-200 hover:border-brand-400 transition-colors">
+                            Pendientes
+                        </button>
+                        <button data-estado="confirmada"
+                            class="filtro-btn px-4 py-1.5 rounded-full text-sm font-medium bg-white text-gray-600 border border-gray-200 hover:border-brand-400 transition-colors">
+                            Confirmadas
+                        </button>
+                        <button data-estado="completada"
+                            class="filtro-btn px-4 py-1.5 rounded-full text-sm font-medium bg-white text-gray-600 border border-gray-200 hover:border-brand-400 transition-colors">
+                            Completadas
+                        </button>
+                        <button data-estado="cancelada"
+                            class="filtro-btn px-4 py-1.5 rounded-full text-sm font-medium bg-white text-gray-600 border border-gray-200 hover:border-brand-400 transition-colors">
+                            Canceladas
+                        </button>
+                    </div>
+
+                    <!-- Filtro fechas -->
+                    <div class="flex items-center gap-2 ml-auto">
+                        <input type="date" id="filtro-desde"
+                            class="px-3 py-1.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500">
+                        <span class="text-xs text-gray-400">–</span>
+                        <input type="date" id="filtro-hasta"
+                            class="px-3 py-1.5 text-sm border border-gray-200 rounded-lg bg-white focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500">
+                        <button id="btn-limpiar-fechas"
+                            class="px-3 py-1.5 text-xs font-medium text-gray-500 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+                            Limpiar
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Grid de citas -->
-                <div id="contenedor-citas" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <div class="col-span-3 flex justify-center items-center h-32 text-gray-400">
+                <div id="contenedor-citas" class="flex flex-col">
+                    <div class="flex justify-center items-center h-32 text-gray-400">
                         Cargando citas...
                     </div>
                 </div>
@@ -136,7 +180,21 @@ if (!isset($_SESSION['user_id'])) {
 
     <?php include 'componentes/modal-crear-cita.php'; ?>
     <?php include 'componentes/modal-finalizar-cita.php'; ?>
+    <?php include 'componentes/modal-notas-cita.php'; ?>
+    <?php include 'componentes/modal-editar-cita.php'; ?>
 
+    <style>
+        .cita-cerrada .collapsible-body { display: none; }
+        .cita-cerrada:not(.expanded) { opacity: 0.65; padding: 0.5rem 0.75rem !important; gap: 0 !important; border-color: #e5e7eb !important; box-shadow: none !important; }
+        .cita-cerrada:not(.expanded) .collapse-chevron { transform: rotate(-90deg); }
+        .cita-cerrada:not(.expanded) .cita-summary { display: flex; }
+        .cita-cerrada:not(.expanded) .text-lg { font-size: 0.875rem !important; }
+        .cita-cerrada.expanded .collapsible-body { display: flex; }
+        .cita-cerrada.expanded { opacity: 0.85; border-color: #d1d5db !important; }
+        .cita-cerrada.expanded .collapse-chevron { transform: rotate(0deg); }
+        .cita-summary { display: none; font-size: 0.75rem; color: #6b7280; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="../scripts/sidebar.js"></script>
     <script src="scripts/crear-cita.js"></script>
     <script src="scripts/listar-citas.js"></script>

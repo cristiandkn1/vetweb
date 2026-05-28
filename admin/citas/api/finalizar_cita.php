@@ -36,21 +36,16 @@ try {
     ");
     $stmt->execute([$precio_final, $observaciones_vet, $pagado, $cita_id]);
 
-    // Opcional: Agregar observación al registro genérico de la mascota
-    $stmt2 = $pdo->prepare("SELECT mascota_id FROM citas WHERE id = ? LIMIT 1");
-    $stmt2->execute([$cita_id]);
-    $mascota_id = $stmt2->fetchColumn();
-
-    if ($mascota_id) {
-        $fecha = date('d/m/Y');
-        $addObs = "\n---\nCobro ($precio_final) - Cierre de cita ($fecha):\n" . $observaciones_vet;
-        
-        $stmtMascota = $pdo->prepare("
-            UPDATE mascota 
-            SET observaciones = CONCAT(IFNULL(observaciones, ''), ?), fecha_actualizacion = NOW() 
-            WHERE id = ?
-        ");
-        $stmtMascota->execute([$addObs, $mascota_id]);
+    // Crear cuenta de ingreso automática
+    if ($precio_final > 0) {
+        $stmtCita = $pdo->prepare("SELECT c.cliente_id, c.tipo, c.fecha FROM citas c WHERE c.id = ?");
+        $stmtCita->execute([$cita_id]);
+        $citaData = $stmtCita->fetch(PDO::FETCH_ASSOC);
+        if ($citaData) {
+            $estado_cuenta = $pagado ? 'pagado' : 'pendiente';
+            $stmtCuenta = $pdo->prepare("INSERT INTO cuentas (tipo, categoria, descripcion, monto, estado, cita_id, cliente_id, metodo_pago, fecha_contable, created_at) VALUES ('ingreso', ?, ?, ?, ?, ?, ?, ?, CURDATE(), NOW())");
+            $stmtCuenta->execute([$citaData['tipo'], "Cobro por {$citaData['tipo']}: " . substr($observaciones_vet, 0, 200), $precio_final, $estado_cuenta, $cita_id, $citaData['cliente_id'], $pagado ? 'efectivo' : null]);
+        }
     }
 
     $pdo->commit();

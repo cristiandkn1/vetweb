@@ -29,6 +29,11 @@
                             <p class="text-sm text-emerald-800 font-medium">Estás a punto de marcar esta cita como Completada e ingresar la información de cierre clínico y cobro.</p>
                         </div>
 
+                        <div id="kpi-cotizacion-total" class="hidden bg-indigo-50 p-3 rounded-lg border border-indigo-100 mb-3">
+                            <p class="text-xs text-indigo-600 font-medium uppercase tracking-wide">Total Estimado según Cotización</p>
+                            <p class="text-xl font-bold text-indigo-700" id="kpi-cotizacion-total-valor">$0</p>
+                        </div>
+
                         <div>
                             <label for="precio_final" class="block text-sm font-medium text-gray-700">Cobro Generado (Precio Final) *</label>
                             <div class="relative mt-1">

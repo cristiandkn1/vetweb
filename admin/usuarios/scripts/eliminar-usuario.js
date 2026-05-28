@@ -1,43 +1,54 @@
-// admin/usuario/scripts/eliminar-usuario.js
-// Responsabilidad: mostrar confirmación y ejecutar el DELETE
+// admin/usuarios/scripts/eliminar-usuario.js
+// SweetAlert2 delete confirmation
 
-let _eliminarUsuarioId = null;
+async function abrirModalEliminarUsuario(id, nombre) {
+    const { isConfirmed } = await Swal.fire({
+        title: '¿Eliminar cliente?',
+        html: `Estás a punto de eliminar a <strong>${escHtml(nombre)}</strong>.<br>Se eliminarán también sus mascotas, citas y cuenta de usuario.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#dc2626',
+        cancelButtonColor: '#6b7280',
+        confirmButtonText: '<i class="fa-solid fa-trash-can mr-1"></i>Sí, eliminar',
+        cancelButtonText: 'Cancelar',
+        reverseButtons: true
+    });
 
-function abrirModalEliminarUsuario(id, nombre) {
-    _eliminarUsuarioId = id;
-    document.getElementById('eliminar-usuario-nombre').textContent = nombre;
-    document.getElementById('modal-eliminar-usuario').classList.remove('hidden');
-}
-
-document.getElementById('btn-cancelar-eliminar').addEventListener('click', () => {
-    document.getElementById('modal-eliminar-usuario').classList.add('hidden');
-    _eliminarUsuarioId = null;
-});
-
-document.getElementById('btn-confirmar-eliminar').addEventListener('click', async () => {
-    if (!_eliminarUsuarioId) return;
-
-    const btn = document.getElementById('btn-confirmar-eliminar');
-    btn.disabled    = true;
-    btn.textContent = 'Eliminando...';
+    if (!isConfirmed) return;
 
     try {
         const fd = new FormData();
-        fd.append('id', _eliminarUsuarioId);
-        const res  = await fetch(`${BASE_USUARIO}/eliminar_usuario.php`, { method: 'POST', body: fd });
+        fd.append('id', id);
+        const res = await fetch(`${BASE_USUARIO}/eliminar_usuario.php`, { method: 'POST', body: fd });
         const data = await res.json();
 
         if (data.success) {
-            document.getElementById('modal-eliminar-usuario').classList.add('hidden');
-            _eliminarUsuarioId = null;
+            await Swal.fire({
+                icon: 'success',
+                title: 'Eliminado',
+                text: data.message || 'Cliente eliminado correctamente.',
+                confirmButtonColor: '#0284c7',
+                confirmButtonText: 'OK',
+                timer: 2500,
+                timerProgressBar: true
+            });
             cargarUsuarios();
         } else {
-            alert(data.message || 'Error al eliminar.');
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: data.message || 'No se pudo eliminar el cliente.',
+                confirmButtonColor: '#0284c7',
+                confirmButtonText: 'OK'
+            });
         }
     } catch {
-        alert('Error de conexión.');
-    } finally {
-        btn.disabled    = false;
-        btn.textContent = 'Sí, eliminar';
+        Swal.fire({
+            icon: 'error',
+            title: 'Error de conexión',
+            text: 'No se pudo conectar con el servidor.',
+            confirmButtonColor: '#0284c7',
+            confirmButtonText: 'OK'
+        });
     }
-});
+}

@@ -214,7 +214,7 @@ $fecha = new DateTime($cita['fecha']);
                                 <div class="text-xs text-gray-400 mb-1">Precio estimado</div>
                                 <div class="font-bold text-gray-800">
                                     $
-                                    <?= number_format($cita['precio_estimado'], 0, ',', '.') ?>
+                                    <?= number_format((float) ($cita['precio_estimado'] ?? 0), 0, ',', '.') ?>
                                 </div>
                             </div>
                         <?php endif; ?>
@@ -224,7 +224,7 @@ $fecha = new DateTime($cita['fecha']);
                                 <div class="text-xs text-green-600 mb-1">Precio final</div>
                                 <div class="font-bold text-green-700">
                                     $
-                                    <?= number_format($cita['precio_final'], 0, ',', '.') ?>
+                                    <?= number_format((float) ($cita['precio_final'] ?? 0), 0, ',', '.') ?>
                                 </div>
                             </div>
                         <?php endif; ?>

@@ -1,5 +1,3 @@
-// admin/servicios/scripts/servicios.js
-
 document.addEventListener('DOMContentLoaded', () => {
 
     const BASE = '/admin/servicios/api';
@@ -13,6 +11,61 @@ document.addEventListener('DOMContentLoaded', () => {
     const btnSubmit     = document.getElementById('btn-submit-servicio');
     const modalTitle    = document.getElementById('modal-servicio-title');
     const contenedor    = document.getElementById('contenedor-servicios');
+    const inputIcono    = document.getElementById('servicio_icono');
+    const iconoPicker   = document.getElementById('icono-picker');
+
+    // ── Mapa de iconos (Font Awesome) ────────────────────────────────────────────
+    const ICONOS = [
+        { id: 'fa-stethoscope',     label: 'Estetoscopio' },
+        { id: 'fa-syringe',         label: 'Jeringa' },
+        { id: 'fa-bone',            label: 'Hueso' },
+        { id: 'fa-paw',             label: 'Huella' },
+        { id: 'fa-bandage',         label: 'Venda' },
+        { id: 'fa-pills',           label: 'Pastillas' },
+        { id: 'fa-microscope',      label: 'Microscopio' },
+        { id: 'fa-heart',           label: 'Corazón' },
+        { id: 'fa-tooth',           label: 'Diente' },
+        { id: 'fa-scissors',        label: 'Tijeras' },
+        { id: 'fa-temperature-high',label: 'Termómetro' },
+        { id: 'fa-eye',             label: 'Ojo' },
+        { id: 'fa-droplet',         label: 'Gota' },
+        { id: 'fa-truck-medical',   label: 'Urgencia' },
+        { id: 'fa-dog',             label: 'Perro' },
+        { id: 'fa-cat',             label: 'Gato' },
+        { id: 'fa-vial',            label: 'Muestra' },
+        { id: 'fa-weight-scale',    label: 'Peso' },
+        { id: 'fa-kit-medical',     label: 'Cirugía' },
+        { id: 'fa-clock',           label: 'Reloj' },
+        { id: 'fa-bolt',            label: 'Rayos X' },
+        { id: 'fa-staff-snake',     label: 'Veterinaria' },
+        { id: 'fa-notes-medical',   label: 'Receta' },
+    ];
+
+    // ── Renderizar picker de iconos ─────────────────────────────────────────────
+    function renderIconoPicker(selected) {
+        if (!iconoPicker) return;
+        let html = '<button type="button" class="icono-opt w-10 h-10 rounded-lg border-2 border-gray-200 hover:border-brand-300 hover:bg-brand-50 transition-all flex items-center justify-center ' +
+            (!selected ? 'border-brand-500 bg-brand-50 ring-2 ring-brand-200' : '') + '" data-icon="" title="Sin icono">' +
+            '<i class="fa-solid fa-xmark text-lg text-gray-400"></i></button>';
+        for (const icon of ICONOS) {
+            const active = icon.id === selected ? 'border-brand-500 bg-brand-50 ring-2 ring-brand-200' : 'border-gray-200 hover:border-brand-300 hover:bg-brand-50';
+            html += `<button type="button" class="icono-opt w-10 h-10 rounded-lg border-2 ${active} transition-all flex items-center justify-center" data-icon="${icon.id}" title="${icon.label}">
+                <i class="fa-solid ${icon.id} text-xl text-gray-700"></i>
+            </button>`;
+        }
+        iconoPicker.innerHTML = html;
+        iconoPicker.querySelectorAll('.icono-opt').forEach(btn => {
+            btn.addEventListener('click', () => {
+                iconoPicker.querySelectorAll('.icono-opt').forEach(b => {
+                    b.classList.remove('border-brand-500', 'bg-brand-50', 'ring-2', 'ring-brand-200');
+                    b.classList.add('border-gray-200', 'hover:border-brand-300', 'hover:bg-brand-50');
+                });
+                btn.classList.remove('border-gray-200', 'hover:border-brand-300', 'hover:bg-brand-50');
+                btn.classList.add('border-brand-500', 'bg-brand-50', 'ring-2', 'ring-brand-200');
+                inputIcono.value = btn.dataset.icon;
+            });
+        });
+    }
 
     // ── Modal ──────────────────────────────────────────────────────────────────
     function toggleModal(show) {
@@ -30,6 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
         modalTitle.textContent = 'Nuevo Servicio';
         btnSubmit.textContent = 'Guardar Servicio';
         clearError();
+        renderIconoPicker('');
     }
 
     btnAbrir.addEventListener('click', () => toggleModal(true));
@@ -92,6 +146,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    function iconoHTML(id) {
+        if (!id) return '';
+        return `<i class="fa-solid ${id} text-2xl text-brand-500 w-8 shrink-0 text-center"></i>`;
+    }
+
     function crearCard(s) {
         const precioTexto = s.precio_min > 0 && s.precio_max > 0
             ? `$${Number(s.precio_min).toLocaleString('es-CL')} – $${Number(s.precio_max).toLocaleString('es-CL')}`
@@ -102,17 +161,20 @@ document.addEventListener('DOMContentLoaded', () => {
         const card = document.createElement('div');
         card.className = 'bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex flex-col gap-3 hover:shadow-md transition-shadow';
         card.innerHTML = `
-            <div class="flex items-start justify-between gap-2">
-                <div class="flex-1">
-                    <h3 class="font-semibold text-gray-800 text-base">${escHtml(s.nombre)}</h3>
-                    ${s.descripcion ? `<p class="text-sm text-gray-500 mt-0.5">${escHtml(s.descripcion)}</p>` : ''}
+            <div class="flex items-start justify-between gap-3">
+                <div class="flex items-center gap-3 flex-1 min-w-0">
+                    ${iconoHTML(s.icono)}
+                    <div class="min-w-0">
+                        <h3 class="font-semibold text-gray-800 text-base truncate">${escHtml(s.nombre)}</h3>
+                        ${s.descripcion ? `<p class="text-sm text-gray-500 mt-0.5 line-clamp-2">${escHtml(s.descripcion)}</p>` : ''}
+                    </div>
                 </div>
-                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${s.activo == 1 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}">
+                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium shrink-0 ${s.activo == 1 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}">
                     ${s.activo == 1 ? 'Activo' : 'Inactivo'}
                 </span>
             </div>
 
-            <div class="flex items-center gap-4 text-sm text-gray-600">
+            <div class="flex items-center gap-4 text-sm text-gray-600 flex-wrap">
                 <span class="flex items-center gap-1">
                     <svg class="w-4 h-4 text-brand-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -159,6 +221,9 @@ document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('servicio_precio_max').value  = s.precio_max;
             document.getElementById('servicio_duracion').value    = s.duracion_min;
             document.getElementById('servicio_activo').checked    = s.activo == 1;
+
+            renderIconoPicker(s.icono || '');
+            inputIcono.value = s.icono || '';
 
             modalTitle.textContent  = 'Editar Servicio';
             btnSubmit.textContent   = 'Actualizar Servicio';
@@ -225,7 +290,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ── Helpers ────────────────────────────────────────────────────────────────
     function escHtml(str) {
-        return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+        if (!str) return '';
+        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
     }
 
     // Cargar al inicio

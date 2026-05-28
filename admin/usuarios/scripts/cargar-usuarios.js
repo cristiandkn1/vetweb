@@ -87,15 +87,15 @@ function renderTablaUsuarios() {
             <div class="flex items-center gap-1.5 justify-center sm:justify-center flex-wrap">
                 <button data-id="${u.id}" data-action="mascotas"
                     class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-amber-700 bg-amber-50 border border-amber-200 rounded-lg hover:bg-amber-100 transition">
-                    🐾 Mascotas
+                    <i class="fa-solid fa-paw"></i> Mascotas
                 </button>
                 <button data-id="${u.id}" data-action="editar"
                     class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition">
-                    ✏️ Editar
+                    <i class="fa-solid fa-pen-to-square"></i> Editar
                 </button>
                 <button data-id="${u.id}" data-nombre="${escHtml(u.nombre_completo ?? '')}" data-action="eliminar"
                     class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-red-600 bg-red-50 border border-red-200 rounded-lg hover:bg-red-100 transition">
-                    🗑️ Eliminar
+                    <i class="fa-solid fa-trash-can"></i> Eliminar
                 </button>
             </div>`;
 

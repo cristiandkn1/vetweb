@@ -36,7 +36,7 @@ require_once 'api/auth.php';
 
             <!-- Header -->
             <div class="text-center mb-8">
-                <a href="../index.html" class="inline-block mb-4 group">
+                <a href="../index.php" class="inline-block mb-4 group">
                     <div
                         class="flex items-center justify-center gap-2 text-brand-700 group-hover:text-brand-600 transition-colors">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -81,7 +81,7 @@ require_once 'api/auth.php';
                         </div>
                         <div class="ml-3">
                             <p class="text-sm text-green-700"><?php echo htmlspecialchars($message); ?></p>
-                            <p class="text-sm text-green-600 mt-1"><a href="../index.html"
+                            <p class="text-sm text-green-600 mt-1"><a href="../index.php"
                                     class="font-medium underline hover:text-green-800">Ir a Iniciar Sesión</a></p>
                         </div>
                     </div>
@@ -179,7 +179,7 @@ require_once 'api/auth.php';
             <div class="mt-8 text-center border-t border-gray-200 pt-6">
                 <p class="text-sm text-gray-600">
                     ¿Ya tienes una cuenta?
-                    <a href="../index.html" class="font-medium text-brand-600 hover:text-brand-500 hover:underline">
+                    <a href="../index.php" class="font-medium text-brand-600 hover:text-brand-500 hover:underline">
                         Inicia sesión aquí
                     </a>
                 </p>

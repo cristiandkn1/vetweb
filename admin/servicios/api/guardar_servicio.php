@@ -17,6 +17,7 @@ $precio_min = floatval($_POST['precio_min'] ?? 0);
 $precio_max = floatval($_POST['precio_max'] ?? 0);
 $duracion = intval($_POST['duracion_min'] ?? 30);
 $activo = isset($_POST['activo']) ? 1 : 0;
+$icono = trim($_POST['icono'] ?? '');
 
 // Validaciones
 if ($nombre === '') {
@@ -32,22 +33,20 @@ if ($precio_max > 0 && $precio_min > $precio_max) {
 
 try {
     if ($id > 0) {
-        // Editar servicio existente
         $stmt = $pdo->prepare(
             "UPDATE servicios
              SET nombre = ?, descripcion = ?, precio_min = ?, precio_max = ?,
-                 duracion_min = ?, activo = ?
+                 duracion_min = ?, activo = ?, icono = ?
              WHERE id = ?"
         );
-        $stmt->execute([$nombre, $descripcion ?: null, $precio_min, $precio_max, $duracion, $activo, $id]);
+        $stmt->execute([$nombre, $descripcion ?: null, $precio_min, $precio_max, $duracion, $activo, $icono ?: null, $id]);
         $mensaje = 'Servicio actualizado correctamente.';
     } else {
-        // Crear nuevo servicio
         $stmt = $pdo->prepare(
-            "INSERT INTO servicios (nombre, descripcion, precio_min, precio_max, duracion_min, activo)
-             VALUES (?, ?, ?, ?, ?, ?)"
+            "INSERT INTO servicios (nombre, descripcion, precio_min, precio_max, duracion_min, activo, icono)
+             VALUES (?, ?, ?, ?, ?, ?, ?)"
         );
-        $stmt->execute([$nombre, $descripcion ?: null, $precio_min, $precio_max, $duracion, $activo]);
+        $stmt->execute([$nombre, $descripcion ?: null, $precio_min, $precio_max, $duracion, $activo, $icono ?: null]);
         $id = (int) $pdo->lastInsertId();
         $mensaje = 'Servicio creado correctamente.';
     }

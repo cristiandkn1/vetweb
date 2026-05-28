@@ -14,13 +14,25 @@ if ($cliente_id === 0) {
 
 try {
     $stmt = $pdo->prepare(
-        "SELECT id, cliente_id, nombre, especie, raza, fecha_nacimiento, sexo, color, peso, ultima_revision, notas_internas, numero_chip, esterilizado, alergias, observaciones, fecha_registro, fecha_actualizacion
+        "SELECT id, cliente_id, nombre, especie, raza, fecha_nacimiento, sexo, color, peso, ultima_revision, notas_internas, numero_chip, esterilizado, alergias, observaciones, token_publico, fecha_registro, fecha_actualizacion
          FROM mascota
          WHERE cliente_id = ?
          ORDER BY nombre ASC"
     );
     $stmt->execute([$cliente_id]);
     $mascotas = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+    // Auto-generar token_publico para mascotas que no tengan uno
+    foreach ($mascotas as &$m) {
+        if (empty($m['token_publico'])) {
+            $token = bin2hex(random_bytes(24));
+            $upd = $pdo->prepare("UPDATE mascota SET token_publico = ? WHERE id = ?");
+            $upd->execute([$token, $m['id']]);
+            $m['token_publico'] = $token;
+        }
+    }
+    unset($m);
+
     echo json_encode(['success' => true, 'mascotas' => $mascotas]);
 } catch (PDOException $e) {
     error_log("Error listar_mascotas: " . $e->getMessage());

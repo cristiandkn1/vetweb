@@ -54,7 +54,7 @@ function crearCardMascota(m) {
     card.className = 'bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow';
     card.innerHTML = `
         <div class="flex items-center gap-4 p-4 border-b border-gray-50">
-            <div class="w-14 h-14 rounded-xl ${color} flex items-center justify-center shrink-0 p-2">
+            <div class="w-16 h-16 rounded-xl ${color} flex items-center justify-center shrink-0">
                 ${svg}
             </div>
             <div class="flex-1 min-w-0">

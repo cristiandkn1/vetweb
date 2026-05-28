@@ -1,0 +1,22 @@
+CREATE TABLE IF NOT EXISTS `cuentas` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `tipo` ENUM('ingreso','gasto') NOT NULL,
+  `categoria` VARCHAR(100) NOT NULL,
+  `descripcion` TEXT DEFAULT NULL,
+  `monto` DECIMAL(10,2) NOT NULL,
+  `estado` ENUM('pendiente','pagado','cancelado') NOT NULL DEFAULT 'pendiente',
+  `cita_id` INT UNSIGNED DEFAULT NULL,
+  `cliente_id` INT UNSIGNED DEFAULT NULL,
+  `metodo_pago` VARCHAR(50) DEFAULT NULL,
+  `fecha_contable` DATE NOT NULL,
+  `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_cuentas_cita` (`cita_id`),
+  KEY `idx_cuentas_cliente` (`cliente_id`),
+  KEY `idx_cuentas_estado` (`estado`),
+  KEY `idx_cuentas_tipo` (`tipo`),
+  KEY `idx_cuentas_fecha` (`fecha_contable`),
+  CONSTRAINT `fk_cuentas_cita` FOREIGN KEY (`cita_id`) REFERENCES `citas` (`id`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `fk_cuentas_cliente` FOREIGN KEY (`cliente_id`) REFERENCES `cliente` (`id`) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

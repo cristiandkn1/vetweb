@@ -149,6 +149,7 @@ CREATE TABLE IF NOT EXISTS `servicios` (
   `precio_max`   DECIMAL(10,2)   NOT NULL DEFAULT 0.00,
   `duracion_min` SMALLINT        NOT NULL DEFAULT 30,   -- duración estimada en minutos
   `activo`       TINYINT(1)      NOT NULL DEFAULT 1,
+  `icono`        VARCHAR(50)     DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `idx_servicios_nombre` (`nombre`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -174,6 +175,8 @@ CREATE TABLE IF NOT EXISTS `citas` (
   `fecha`             DATETIME        NOT NULL,
   `tipo`              VARCHAR(150)    NOT NULL,   -- nombre del servicio (igual que servicios.nombre)
   `nota`              TEXT            DEFAULT NULL,  -- nota de recepción / ingreso
+  `recomendaciones`   TEXT            DEFAULT NULL,  -- recomendaciones previas a la cita
+  `comentarios`       TEXT            DEFAULT NULL,  -- comentarios / procedimientos durante la cita
   `estado`            ENUM('pendiente','confirmada','completada','cancelada')
                                       NOT NULL DEFAULT 'pendiente',
   `token_publico`     CHAR(48)        NOT NULL,   -- 48 hex chars para seguimiento público
@@ -196,6 +199,88 @@ CREATE TABLE IF NOT EXISTS `citas` (
   CONSTRAINT `fk_citas_mascota`
     FOREIGN KEY (`mascota_id`) REFERENCES `mascota` (`id`)
     ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================
+-- TABLA: cita_bitacora — Registro cronológico de eventos/procedimientos
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `cita_bitacora` (
+  `id`          INT UNSIGNED  NOT NULL AUTO_INCREMENT,
+  `cita_id`     INT UNSIGNED  NOT NULL,
+  `hora`        TIME          NOT NULL DEFAULT (CURRENT_TIME),
+  `comentario`  TEXT          NOT NULL,
+  `created_at`  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`  DATETIME      DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_bitacora_cita` (`cita_id`),
+  CONSTRAINT `fk_bitacora_cita`
+    FOREIGN KEY (`cita_id`) REFERENCES `citas` (`id`)
+    ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================
+-- TABLA: cotizaciones — Cotizaciones generadas desde citas
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `cotizaciones` (
+  `id`                  INT UNSIGNED    NOT NULL AUTO_INCREMENT,
+  `numero_cotizacion`   VARCHAR(20)     NOT NULL,
+  `cita_id`             INT UNSIGNED    DEFAULT NULL,
+  `cliente_id`          INT UNSIGNED    NOT NULL,
+  `mascota_id`          INT UNSIGNED    NOT NULL,
+  `servicio`            VARCHAR(150)    NOT NULL,
+  `precio_estimado_min` DECIMAL(10,2)   DEFAULT NULL,
+  `precio_estimado_max` DECIMAL(10,2)   DEFAULT NULL,
+  `nota`                TEXT            DEFAULT NULL,
+  `estado`              ENUM('pendiente','aprobada','rechazada','vencida') NOT NULL DEFAULT 'pendiente',
+  `created_at`          DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`          DATETIME        DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uq_numero_cotizacion` (`numero_cotizacion`),
+  KEY `idx_cotizaciones_cliente` (`cliente_id`),
+  KEY `idx_cotizaciones_estado` (`estado`),
+  CONSTRAINT `fk_cotizaciones_cliente`
+    FOREIGN KEY (`cliente_id`) REFERENCES `cliente` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_cotizaciones_mascota`
+    FOREIGN KEY (`mascota_id`) REFERENCES `mascota` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================
+-- TABLA: cotizacion_detalles — Líneas individuales de cada cotización
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `cotizacion_detalles` (
+  `id`              INT UNSIGNED    NOT NULL AUTO_INCREMENT,
+  `cotizacion_id`   INT UNSIGNED    NOT NULL,
+  `descripcion`     VARCHAR(255)    NOT NULL,
+  `cantidad`        INT             NOT NULL DEFAULT 1,
+  `precio_unitario` DECIMAL(10,2)   NOT NULL DEFAULT 0,
+  `afecto_iva`      TINYINT         NOT NULL DEFAULT 1,
+  `created_at`      DATETIME        NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_detalle_cotizacion` (`cotizacion_id`),
+  CONSTRAINT `fk_detalle_cotizacion`
+    FOREIGN KEY (`cotizacion_id`) REFERENCES `cotizaciones` (`id`)
+    ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================
+-- TABLA: inventario — Control de stock de vacunas, remedios, equipos e insumos
+-- ============================================================
+CREATE TABLE IF NOT EXISTS `inventario` (
+  `id`               INT UNSIGNED    NOT NULL AUTO_INCREMENT,
+  `nombre`           VARCHAR(200)    NOT NULL,
+  `descripcion`      TEXT,
+  `categoria`        ENUM('vacuna','remedio','equipo','insumo','otro') NOT NULL DEFAULT 'otro',
+  `cantidad`         INT             NOT NULL DEFAULT 0,
+  `precio`           DECIMAL(10,2)   DEFAULT NULL,
+  `fecha_vencimiento` DATE           DEFAULT NULL,
+  `lote`             VARCHAR(100)    DEFAULT NULL,
+  `proveedor`        VARCHAR(200)    DEFAULT NULL,
+  `ubicacion`        VARCHAR(200)    DEFAULT NULL,
+  `created_at`       DATETIME        DEFAULT CURRENT_TIMESTAMP,
+  `updated_at`       DATETIME        DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  INDEX `idx_inventario_categoria` (`categoria`),
+  INDEX `idx_inventario_vencimiento` (`fecha_vencimiento`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ============================================================

@@ -22,3 +22,11 @@ window.addEventListener("scroll", () => {
     navbar.classList.replace("bg-white", "bg-white/90");
   }
 });
+
+// Ctrl+L → ir al login
+document.addEventListener("keydown", (e) => {
+  if (e.ctrlKey && e.key === "l") {
+    e.preventDefault();
+    window.location.href = "login.php";
+  }
+});

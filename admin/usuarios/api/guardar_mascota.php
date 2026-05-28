@@ -71,8 +71,8 @@ try {
             "INSERT INTO mascota
                 (cliente_id, nombre, especie, raza, fecha_nacimiento, sexo, color,
                  peso, esterilizado, numero_chip, ultima_revision, alergias, notas_internas,
-                 observaciones, fecha_registro, fecha_actualizacion)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())"
+                 observaciones, token_publico, fecha_registro, fecha_actualizacion)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())"
         );
         $stmt->execute([
             $cliente_id,
@@ -88,7 +88,8 @@ try {
             $ultima_revision ?: null,
             $alergias ?: null,
             $notas_internas ?: null,
-            $observaciones ?: null
+            $observaciones ?: null,
+            bin2hex(random_bytes(24))
         ]);
         $mascota_id = (int) $pdo->lastInsertId();
     }
@@ -119,7 +120,7 @@ try {
             $stmt->execute([$v_nombre, $v_f_ap, $v_f_pr, $v_vet, $v_lote, $v_notas, $v_id, $mascota_id]);
             $vacuna_ids_validos[] = $v_id;
         } else {
-            $stmt = $pdo->prepare("INSERT INTO vacuna (mascota_id, nombre, fecha_aplicacion, fecha_proxima, veterinario, lote, notas, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())");
+            $stmt = $pdo->prepare("INSERT INTO vacuna (mascota_id, nombre, fecha_aplicacion, fecha_proxima, veterinario, lote, notas) VALUES (?, ?, ?, ?, ?, ?, ?)");
             $stmt->execute([$mascota_id, $v_nombre, $v_f_ap, $v_f_pr, $v_vet, $v_lote, $v_notas]);
             $vacuna_ids_validos[] = (int) $pdo->lastInsertId();
         }

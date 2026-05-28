@@ -157,32 +157,9 @@ if (!isset($_SESSION['user_id'])) {
         </div>
     </div>
 
-    <!-- ── Modal confirmar eliminar ────────────────────────────────────────── -->
-    <div id="modal-eliminar-usuario" class="fixed inset-0 z-50 hidden" role="dialog" aria-modal="true">
-        <div class="fixed inset-0 bg-gray-900/50"></div>
-        <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
-            <div class="relative bg-white rounded-xl shadow-xl w-full max-w-sm p-6 text-center">
-                <div class="text-4xl mb-3">⚠️</div>
-                <h3 class="text-lg font-bold text-gray-800 mb-2">¿Eliminar cliente?</h3>
-                <p class="text-sm text-gray-500 mb-1">Estás a punto de eliminar a:</p>
-                <p id="eliminar-usuario-nombre" class="font-semibold text-gray-800 mb-5"></p>
-                <p class="text-xs text-red-500 mb-5">Esta acción no se puede deshacer.</p>
-                <div class="flex gap-3">
-                    <button id="btn-cancelar-eliminar"
-                        class="flex-1 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition">
-                        Cancelar
-                    </button>
-                    <button id="btn-confirmar-eliminar"
-                        class="flex-1 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition">
-                        Sí, eliminar
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <?php include 'componentes/modal-mascotas.php'; ?>
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="../scripts/sidebar.js"></script>
     <!-- Orden importante: cargar → crear → editar → eliminar → guardar → mascotas → init -->
     <script src="scripts/cargar-usuarios.js"></script>
