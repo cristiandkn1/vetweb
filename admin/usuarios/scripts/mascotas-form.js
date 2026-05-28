@@ -17,6 +17,9 @@ function actualizarAvatarPreview(especie) {
     const svg     = getEspecieSvg(especie);
     preview.className = `w-20 h-20 rounded-2xl border-2 flex items-center justify-center p-3 ${color} border-current border-opacity-20`;
     preview.innerHTML = svg;
+    if (window.lucide) {
+        window.lucide.createIcons();
+    }
 }
 
 document.getElementById('especie-selector').addEventListener('change', (e) => {

@@ -11,12 +11,15 @@ window.MascotaState = {
 
 // ── SVGs de especie ────────────────────────────────────────────────────────────
 const ESPECIE_SVG = {
-    Perro:  `<i data-lucide="dog" class="w-full h-full"></i>`,
-    Gato:   `<i data-lucide="cat" class="w-full h-full"></i>`,
-    Ave:    `<i data-lucide="bird" class="w-full h-full"></i>`,
-    Conejo: `<i data-lucide="rabbit" class="w-full h-full"></i>`,
-    Reptil: `<i data-lucide="turtle" class="w-full h-full"></i>`,
-    default:`<i data-lucide="paw-print" class="w-full h-full"></i>`,
+    Perro:   `<i data-lucide="dog" class="w-full h-full"></i>`,
+    Gato:    `<i data-lucide="cat" class="w-full h-full"></i>`,
+    Ave:     `<i data-lucide="bird" class="w-full h-full"></i>`,
+    Conejo:  `<i data-lucide="rabbit" class="w-full h-full"></i>`,
+    Roedor:  `<i data-lucide="squirrel" class="w-full h-full"></i>`,
+    Hamster: `<i data-lucide="squirrel" class="w-full h-full"></i>`,
+    Cobaya:  `<i data-lucide="squirrel" class="w-full h-full"></i>`,
+    Reptil:  `<i data-lucide="turtle" class="w-full h-full"></i>`,
+    default: `<i data-lucide="paw-print" class="w-full h-full"></i>`,
 };
 
 // ── Colores por especie ────────────────────────────────────────────────────────
@@ -25,6 +28,9 @@ const ESPECIE_COLOR = {
     Gato:    'text-purple-500 bg-purple-50',
     Ave:     'text-sky-500 bg-sky-50',
     Conejo:  'text-pink-400 bg-pink-50',
+    Roedor:  'text-orange-500 bg-orange-50',
+    Hamster: 'text-orange-500 bg-orange-50',
+    Cobaya:  'text-orange-500 bg-orange-50',
     Reptil:  'text-green-500 bg-green-50',
     default: 'text-gray-400 bg-gray-50',
 };

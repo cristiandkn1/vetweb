@@ -14,10 +14,12 @@ if ($cliente_id === 0) {
 
 try {
     $stmt = $pdo->prepare(
-        "SELECT id, cliente_id, nombre, especie, raza, fecha_nacimiento, sexo, color, peso, ultima_revision, notas_internas, numero_chip, esterilizado, alergias, observaciones, token_publico, fecha_registro, fecha_actualizacion
-         FROM mascota
-         WHERE cliente_id = ?
-         ORDER BY nombre ASC"
+        "SELECT m.id, m.cliente_id, m.nombre, m.especie, m.raza, m.fecha_nacimiento, m.sexo, m.color, m.peso, m.ultima_revision, m.notas_internas, m.numero_chip, m.esterilizado, m.alergias, m.observaciones, m.token_publico, m.fecha_registro, m.fecha_actualizacion,
+                cl.telefono AS cliente_telefono
+         FROM mascota m
+         JOIN cliente cl ON m.cliente_id = cl.id
+         WHERE m.cliente_id = ?
+         ORDER BY m.nombre ASC"
     );
     $stmt->execute([$cliente_id]);
     $mascotas = $stmt->fetchAll(PDO::FETCH_ASSOC);

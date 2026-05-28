@@ -93,19 +93,7 @@
                         Ingresar
                     </button>
 
-                    <div class="relative my-4">
-                        <div class="absolute inset-0 flex items-center">
-                            <div class="w-full border-t border-gray-300"></div>
-                        </div>
-                        <div class="relative flex justify-center text-sm">
-                            <span class="px-2 bg-white text-gray-500">¿No tienes cuenta?</span>
-                        </div>
-                    </div>
 
-                    <a href="/register/registro.php"
-                        class="w-full flex justify-center py-3 px-4 border border-brand-600 rounded-lg shadow-sm text-sm font-medium text-brand-600 bg-white hover:bg-brand-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 transition-colors">
-                        Registrarse
-                    </a>
                 </form>
             </div>
         </div>
