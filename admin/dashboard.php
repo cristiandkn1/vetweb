@@ -130,7 +130,7 @@ $stmt = $pdo->query("
     JOIN mascota m ON me.mascota_id = m.id
     JOIN cliente cl ON m.cliente_id = cl.id
     WHERE me.activo = 1
-      AND (me.ultimo_control IS NULL OR DATE_ADD(me.ultimo_control, INTERVAL me.recurrencia_dias DAY) <= CURDATE())
+      AND (me.ultimo_control IS NULL OR DATE_ADD(me.ultimo_control, INTERVAL me.recurrencia_dias DAY) <= DATE_ADD(CURDATE(), INTERVAL 14 DAY))
     ORDER BY
         CASE WHEN me.ultimo_control IS NULL THEN 0 ELSE 1 END,
         DATE_ADD(me.ultimo_control, INTERVAL me.recurrencia_dias DAY) ASC
